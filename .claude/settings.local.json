@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd H:/Projects/GlobePlanner && composer create-project laravel/laravel . --prefer-dist 2>&1)",
+      "Read(//h/Projects/**)",
+      "Bash(composer create-project:*)",
+      "Bash(cp H:/Projects/GlobePlannerTemp/artisan H:/Projects/GlobePlanner/artisan && cp H:/Projects/GlobePlannerTemp/composer.lock H:/Projects/GlobePlanner/composer.lock && cp -r H:/Projects/GlobePlannerTemp/app H:/Projects/GlobePlanner/ && cp -r H:/Projects/GlobePlannerTemp/database H:/Projects/GlobePlanner/ && ls H:/Projects/GlobePlanner/)",
+      "Bash(ls -la H:/Projects/GlobePlannerTemp/ | grep \"^\\\\.\" && cp H:/Projects/GlobePlannerTemp/.env H:/Projects/GlobePlanner/.env && cp H:/Projects/GlobePlannerTemp/.env.example H:/Projects/GlobePlanner/.env.example 2>&1)",
+      "Bash(cd H:/Projects/GlobePlanner && php artisan config:show services.google 2>&1)",
+      "Bash(cd H:/Projects/GlobePlanner && php artisan tinker --execute=\"echo 'DB OK: ' . DB::connection\\(\\)->getDatabaseName\\(\\);\" 2>&1)"
+    ]
+  }
+}
