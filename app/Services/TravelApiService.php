@@ -98,8 +98,6 @@ class TravelApiService
             default => 1.0,
         };
 
-        $hotelSeeds = ['grandhotel', 'boutiqueinn', 'cityview', 'resortpool', 'luxuryspa', 'beachhotel'];
-
         $basePrices = [220, 150, 110, 80, 180, 95];
         $starCounts = [5, 4, 4, 3, 5, 3];
         $amenitySets = [
@@ -111,10 +109,11 @@ class TravelApiService
             ['Free WiFi', 'Breakfast', '24h Reception'],
         ];
 
-        return array_values(array_map(function ($feature, $index) use ($priceMultiplier, $hotelSeeds, $basePrices, $starCounts, $amenitySets) {
+        return array_values(array_map(function ($feature, $index) use ($priceMultiplier, $basePrices, $starCounts, $amenitySets) {
             $p    = $feature['properties'];
             $name = $p['name'] ?? 'Hotel';
-            $seed = $hotelSeeds[$index % count($hotelSeeds)];
+            // Unique seed per hotel so images don't repeat
+            $seed = strtolower(preg_replace('/[^a-z0-9]/i', '', $name)) . 'hotel';
 
             return [
                 'id'             => $index + 1,
@@ -290,7 +289,7 @@ class TravelApiService
                 'stars' => 5,
                 'price_per_night' => round(350 * $priceMultiplier),
                 'amenities' => ['Pool', 'Spa', 'Gym', 'Restaurant', 'Bar', 'Concierge'],
-                'image_url' => 'https://picsum.photos/seed/grandhotel/800/600',
+                'image_url' => 'https://picsum.photos/seed/grandpalacehotel/800/600',
                 'type' => 'luxury',
             ],
             [
@@ -301,7 +300,7 @@ class TravelApiService
                 'stars' => 4,
                 'price_per_night' => round(180 * $priceMultiplier),
                 'amenities' => ['Restaurant', 'Bar', 'Rooftop Terrace', 'Free WiFi'],
-                'image_url' => 'https://picsum.photos/seed/boutiqueinn/800/600',
+                'image_url' => 'https://picsum.photos/seed/boutiqueheritagehotel/800/600',
                 'type' => 'boutique',
             ],
             [
@@ -312,7 +311,7 @@ class TravelApiService
                 'stars' => 4,
                 'price_per_night' => round(120 * $priceMultiplier),
                 'amenities' => ['Pool', 'Gym', 'Restaurant', 'Business Center', 'Free WiFi'],
-                'image_url' => 'https://picsum.photos/seed/cityhotel/800/600',
+                'image_url' => 'https://picsum.photos/seed/cityviewcomforthotel/800/600',
                 'type' => 'comfort',
             ],
             [
@@ -323,7 +322,7 @@ class TravelApiService
                 'stars' => 3,
                 'price_per_night' => round(65 * $priceMultiplier),
                 'amenities' => ['Free WiFi', 'Breakfast', 'Lounge', '24/7 Reception'],
-                'image_url' => 'https://picsum.photos/seed/budgethotel/800/600',
+                'image_url' => 'https://picsum.photos/seed/travelersbudgetstay/800/600',
                 'type' => 'budget',
             ],
         ];
@@ -345,6 +344,8 @@ class TravelApiService
         // Build day-by-day plan using real place names where available
         $templates = $this->buildDayTemplates($city, $placeNames, $category);
 
+        $daySeeds = ['arrival', 'cityexplore', 'culture', 'nature', 'hiddengems', 'shopping', 'daytrip', 'adventure', 'food', 'relax'];
+
         $itinerary = [];
         for ($day = 1; $day <= $days; $day++) {
             $template = $templates[($day - 1) % count($templates)];
@@ -352,10 +353,13 @@ class TravelApiService
             if ($category === 'luxury') {
                 $activities[] = 'Private chauffeur transfer and VIP access arrangements';
             }
+            $citySeed = strtolower(preg_replace('/[^a-z0-9]/i', '', $city));
+            $daySeed  = $daySeeds[($day - 1) % count($daySeeds)];
             $itinerary[] = [
                 'day'        => $day,
                 'title'      => "Day {$day} – {$template['title']}",
                 'activities' => $activities,
+                'image_url'  => "https://picsum.photos/seed/{$citySeed}{$daySeed}/600/400",
             ];
         }
 

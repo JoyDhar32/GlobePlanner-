@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>GlobePlanner — Mind Map</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0f1e;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 60px;
+  }
+
+  h1 {
+    color: #e2e8f0;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    opacity: 0.5;
+  }
+  .subtitle {
+    color: #38bdf8;
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    margin-bottom: 48px;
+  }
+
+  .canvas {
+    position: relative;
+    width: 1100px;
+    height: 900px;
+  }
+
+  svg.lines {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: visible;
+  }
+
+  /* ── Nodes ── */
+  .node {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    border-radius: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    cursor: default;
+    transition: transform .25s ease, box-shadow .25s ease;
+    z-index: 2;
+  }
+  .node:hover {
+    transform: translate(-50%, -50%) scale(1.08);
+    z-index: 10;
+  }
+
+  /* Centre */
+  .node-center {
+    width: 160px; height: 160px;
+    background: linear-gradient(135deg, #0ea5e9, #7c3aed);
+    box-shadow: 0 0 60px rgba(14,165,233,0.45), 0 0 120px rgba(124,58,237,0.2);
+    border: 3px solid rgba(255,255,255,0.2);
+  }
+  .node-center .icon { font-size: 38px; line-height: 1; }
+  .node-center .label { font-size: 18px; font-weight: 900; color: #fff; margin-top: 6px; }
+  .node-center .sub   { font-size: 10px; color: rgba(255,255,255,0.7); margin-top: 2px; letter-spacing: 1px; }
+
+  /* Level 1 — main branches */
+  .node-l1 {
+    width: 120px; height: 120px;
+    border: 2px solid;
+    backdrop-filter: blur(10px);
+  }
+  .node-l1 .icon  { font-size: 26px; line-height: 1; }
+  .node-l1 .label { font-size: 13px; font-weight: 800; margin-top: 5px; }
+
+  /* Level 2 — sub nodes */
+  .node-l2 {
+    width: 100px; height: 100px;
+    border: 1.5px solid;
+    backdrop-filter: blur(8px);
+  }
+  .node-l2 .icon  { font-size: 20px; line-height: 1; }
+  .node-l2 .label { font-size: 11px; font-weight: 700; margin-top: 4px; line-height: 1.3; padding: 0 6px; }
+
+  /* Level 3 — leaf nodes */
+  .node-l3 {
+    width: 86px; height: 86px;
+    border: 1px solid;
+    backdrop-filter: blur(6px);
+  }
+  .node-l3 .icon  { font-size: 16px; }
+  .node-l3 .label { font-size: 10px; font-weight: 600; margin-top: 3px; line-height: 1.3; padding: 0 4px; }
+
+  /* Color themes per branch */
+  /* Discover — sky */
+  .sky { background: rgba(14,165,233,0.12); border-color: #0ea5e9 !important; color: #7dd3fc; }
+  .sky .label { color: #e0f2fe; }
+  /* Plan — violet */
+  .violet { background: rgba(124,58,237,0.12); border-color: #7c3aed !important; color: #c4b5fd; }
+  .violet .label { color: #ede9fe; }
+  /* Explore — emerald */
+  .emerald { background: rgba(16,185,129,0.12); border-color: #10b981 !important; color: #6ee7b7; }
+  .emerald .label { color: #d1fae5; }
+  /* Save — amber */
+  .amber { background: rgba(245,158,11,0.12); border-color: #f59e0b !important; color: #fcd34d; }
+  .amber .label { color: #fef3c7; }
+  /* Share — rose */
+  .rose { background: rgba(244,63,94,0.12); border-color: #f43f5e !important; color: #fda4af; }
+  .rose .label { color: #ffe4e6; }
+
+  /* Print button */
+  .print-btn {
+    margin-top: 40px;
+    background: rgba(14,165,233,0.15);
+    border: 1px solid #0ea5e9;
+    color: #38bdf8;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 12px 28px;
+    border-radius: 100px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: background .2s;
+  }
+  .print-btn:hover { background: rgba(14,165,233,0.28); }
+
+  /* Legend */
+  .legend {
+    display: flex; gap: 24px; margin-bottom: 36px; flex-wrap: wrap; justify-content: center;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600;
+  }
+  .legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .print-btn { display: none; }
+    .canvas { transform: scale(0.85); transform-origin: top center; }
+  }
+</style>
+</head>
+<body>
+
+<h1>App Lifecycle</h1>
+<div class="subtitle">🌍 GlobePlanner — Mind Map</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#0ea5e9"></div><span style="color:#7dd3fc">Discover</span></div>
+  <div class="legend-item"><div class="legend-dot" style="background:#7c3aed"></div><span style="color:#c4b5fd">Plan</span></div>
+  <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div><span style="color:#6ee7b7">Explore</span></div>
+  <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div><span style="color:#fcd34d">Save</span></div>
+  <div class="legend-item"><div class="legend-dot" style="background:#f43f5e"></div><span style="color:#fda4af">Share</span></div>
+</div>
+
+<div class="canvas" id="canvas">
+
+  <!-- SVG connector lines drawn by JS -->
+  <svg class="lines" id="lines"></svg>
+
+  <!-- ═══════════════════════════════
+       CENTRE
+  ═══════════════════════════════ -->
+  <div class="node node-center" id="center" style="left:550px;top:450px">
+    <div class="icon">🌍</div>
+    <div class="label">GlobePlanner</div>
+    <div class="sub">TRAVEL APP</div>
+  </div>
+
+  <!-- ═══════════════════════════════
+       BRANCH 1 — DISCOVER (top-left)
+  ═══════════════════════════════ -->
+  <div class="node node-l1 sky" id="b1" style="left:240px;top:180px">
+    <div class="icon">🔍</div>
+    <div class="label">Discover</div>
+  </div>
+    <div class="node node-l2 sky" id="b1a" style="left:80px;top:90px">
+      <div class="icon">🏠</div>
+      <div class="label">Home Page</div>
+    </div>
+    <div class="node node-l2 sky" id="b1b" style="left:200px;top:50px">
+      <div class="icon">📍</div>
+      <div class="label">Popular Destinations</div>
+    </div>
+    <div class="node node-l2 sky" id="b1c" style="left:330px;top:70px">
+      <div class="icon">✨</div>
+      <div class="label">Features Overview</div>
+    </div>
+
+  <!-- ═══════════════════════════════
+       BRANCH 2 — PLAN (top-right)
+  ═══════════════════════════════ -->
+  <div class="node node-l1 violet" id="b2" style="left:860px;top:180px">
+    <div class="icon">📋</div>
+    <div class="label">Plan</div>
+  </div>
+    <div class="node node-l2 violet" id="b2a" style="left:780px;top:50px">
+      <div class="icon">📍</div>
+      <div class="label">Search Destination</div>
+    </div>
+    <div class="node node-l2 violet" id="b2b" style="left:930px;top:50px">
+      <div class="icon">⚙️</div>
+      <div class="label">Set Preferences</div>
+    </div>
+    <div class="node node-l3 violet" id="b2b1" style="left:860px;top:-40px">
+      <div class="icon">👥</div>
+      <div class="label">Travelers & Days</div>
+    </div>
+    <div class="node node-l3 violet" id="b2b2" style="left:990px;top:-40px">
+      <div class="icon">💰</div>
+      <div class="label">Budget & Style</div>
+    </div>
+
+  <!-- ═══════════════════════════════
+       BRANCH 3 — EXPLORE (right)
+  ═══════════════════════════════ -->
+  <div class="node node-l1 emerald" id="b3" style="left:970px;top:450px">
+    <div class="icon">🗺️</div>
+    <div class="label">Explore</div>
+  </div>
+    <div class="node node-l2 emerald" id="b3a" style="left:1060px;top:300px">
+      <div class="icon">🏛️</div>
+      <div class="label">Top Attractions</div>
+    </div>
+    <div class="node node-l2 emerald" id="b3b" style="left:1060px;top:450px">
+      <div class="icon">🏨</div>
+      <div class="label">Hotels</div>
+    </div>
+    <div class="node node-l2 emerald" id="b3c" style="left:1060px;top:600px">
+      <div class="icon">📅</div>
+      <div class="label">Day-by-Day Itinerary</div>
+    </div>
+    <div class="node node-l3 emerald" id="b3c1" style="left:1060px;top:730px">
+      <div class="icon">🖼️</div>
+      <div class="label">Images per Day</div>
+    </div>
+
+  <!-- ═══════════════════════════════
+       BRANCH 4 — SAVE (bottom-left)
+  ═══════════════════════════════ -->
+  <div class="node node-l1 amber" id="b4" style="left:240px;top:720px">
+    <div class="icon">💾</div>
+    <div class="label">Save</div>
+  </div>
+    <div class="node node-l2 amber" id="b4a" style="left:120px;top:820px">
+      <div class="icon">📊</div>
+      <div class="label">Dashboard</div>
+    </div>
+    <div class="node node-l2 amber" id="b4b" style="left:260px;top:860px">
+      <div class="icon">❤️</div>
+      <div class="label">Wishlist</div>
+    </div>
+    <div class="node node-l2 amber" id="b4c" style="left:80px;top:660px">
+      <div class="icon">🔐</div>
+      <div class="label">Sign In / Register</div>
+    </div>
+    <div class="node node-l3 amber" id="b4a1" style="left:60px;top:870px">
+      <div class="icon">🗂️</div>
+      <div class="label">Trip History</div>
+    </div>
+    <div class="node node-l3 amber" id="b4a2" style="left:200px;top:940px">
+      <div class="icon">🗑️</div>
+      <div class="label">Delete Trip</div>
+    </div>
+
+  <!-- ═══════════════════════════════
+       BRANCH 5 — SHARE (bottom-right)
+  ═══════════════════════════════ -->
+  <div class="node node-l1 rose" id="b5" style="left:860px;top:720px">
+    <div class="icon">📤</div>
+    <div class="label">Share</div>
+  </div>
+    <div class="node node-l2 rose" id="b5a" style="left:780px;top:850px">
+      <div class="icon">🔗</div>
+      <div class="label">Public Link</div>
+    </div>
+    <div class="node node-l2 rose" id="b5b" style="left:940px;top:850px">
+      <div class="icon">📱</div>
+      <div class="label">Platforms</div>
+    </div>
+    <div class="node node-l3 rose" id="b5b1" style="left:870px;top:950px">
+      <div class="icon">💬</div>
+      <div class="label">WhatsApp / FB</div>
+    </div>
+    <div class="node node-l3 rose" id="b5b2" style="left:1010px;top:950px">
+      <div class="icon">📸</div>
+      <div class="label">Instagram / TikTok</div>
+    </div>
+
+</div><!-- /canvas -->
+
+<button class="print-btn" onclick="window.print()">🖨️ Save as PDF</button>
+
+<script>
+// Draw smooth curved lines between nodes
+const connections = [
+  // Center to L1
+  { from: 'center', to: 'b1',  color: '#0ea5e9', w: 3 },
+  { from: 'center', to: 'b2',  color: '#7c3aed', w: 3 },
+  { from: 'center', to: 'b3',  color: '#10b981', w: 3 },
+  { from: 'center', to: 'b4',  color: '#f59e0b', w: 3 },
+  { from: 'center', to: 'b5',  color: '#f43f5e', w: 3 },
+
+  // Discover
+  { from: 'b1', to: 'b1a', color: '#0ea5e9', w: 1.5 },
+  { from: 'b1', to: 'b1b', color: '#0ea5e9', w: 1.5 },
+  { from: 'b1', to: 'b1c', color: '#0ea5e9', w: 1.5 },
+
+  // Plan
+  { from: 'b2', to: 'b2a', color: '#7c3aed', w: 1.5 },
+  { from: 'b2', to: 'b2b', color: '#7c3aed', w: 1.5 },
+  { from: 'b2b', to: 'b2b1', color: '#7c3aed', w: 1 },
+  { from: 'b2b', to: 'b2b2', color: '#7c3aed', w: 1 },
+
+  // Explore
+  { from: 'b3', to: 'b3a', color: '#10b981', w: 1.5 },
+  { from: 'b3', to: 'b3b', color: '#10b981', w: 1.5 },
+  { from: 'b3', to: 'b3c', color: '#10b981', w: 1.5 },
+  { from: 'b3c', to: 'b3c1', color: '#10b981', w: 1 },
+
+  // Save
+  { from: 'b4', to: 'b4a', color: '#f59e0b', w: 1.5 },
+  { from: 'b4', to: 'b4b', color: '#f59e0b', w: 1.5 },
+  { from: 'b4', to: 'b4c', color: '#f59e0b', w: 1.5 },
+  { from: 'b4a', to: 'b4a1', color: '#f59e0b', w: 1 },
+  { from: 'b4a', to: 'b4a2', color: '#f59e0b', w: 1 },
+
+  // Share
+  { from: 'b5', to: 'b5a', color: '#f43f5e', w: 1.5 },
+  { from: 'b5', to: 'b5b', color: '#f43f5e', w: 1.5 },
+  { from: 'b5b', to: 'b5b1', color: '#f43f5e', w: 1 },
+  { from: 'b5b', to: 'b5b2', color: '#f43f5e', w: 1 },
+];
+
+function getCenter(id) {
+  const el = document.getElementById(id);
+  const canvas = document.getElementById('canvas');
+  const cr = canvas.getBoundingClientRect();
+  const er = el.getBoundingClientRect();
+  return {
+    x: er.left - cr.left + er.width  / 2,
+    y: er.top  - cr.top  + er.height / 2,
+  };
+}
+
+function drawLines() {
+  const svg = document.getElementById('lines');
+  svg.innerHTML = '';
+
+  // Define glowing gradient filters
+  const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+  defs.innerHTML = `
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  `;
+  svg.appendChild(defs);
+
+  connections.forEach(({ from, to, color, w }) => {
+    const a = getCenter(from);
+    const b = getCenter(to);
+
+    // Control points for smooth bezier
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const cx1 = a.x + dx * 0.45;
+    const cy1 = a.y + dy * 0.05;
+    const cx2 = b.x - dx * 0.45;
+    const cy2 = b.y - dy * 0.05;
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', `M${a.x},${a.y} C${cx1},${cy1} ${cx2},${cy2} ${b.x},${b.y}`);
+    path.setAttribute('stroke', color);
+    path.setAttribute('stroke-width', w);
+    path.setAttribute('fill', 'none');
+    path.setAttribute('opacity', '0.6');
+    path.setAttribute('filter', 'url(#glow)');
+    svg.appendChild(path);
+  });
+}
+
+window.addEventListener('load', drawLines);
+window.addEventListener('resize', drawLines);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GlobePlanner — App Design Document</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #0f1117;
+    color: #e2e8f0;
+    min-height: 100vh;
+  }
+
+  /* ── Cover Page ── */
+  .cover {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 40%, #7c3aed 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 60px 40px; position: relative; overflow: hidden;
+    page-break-after: always;
+  }
+  .cover::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 80%, rgba(255,255,255,0.05) 0%, transparent 60%);
+  }
+  .cover-logo {
+    width: 80px; height: 80px; border-radius: 24px;
+    background: rgba(255,255,255,0.15); backdrop-filter: blur(20px);
+    border: 2px solid rgba(255,255,255,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px; margin-bottom: 32px; position: relative;
+  }
+  .cover h1 { font-size: 72px; font-weight: 900; color: #fff; letter-spacing: -2px; position: relative; }
+  .cover .tagline { font-size: 22px; color: rgba(255,255,255,0.8); margin-top: 16px; font-weight: 300; position: relative; }
+  .cover .meta { margin-top: 48px; display: flex; gap: 32px; justify-content: center; position: relative; }
+  .cover .meta-item { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 14px 24px; }
+  .cover .meta-item .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.6); }
+  .cover .meta-item .value { font-size: 16px; font-weight: 700; color: #fff; margin-top: 4px; }
+  .cover .chips { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 40px; position: relative; }
+  .cover .chip { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); border-radius: 100px; padding: 8px 18px; font-size: 13px; font-weight: 600; color: #fff; }
+
+  /* ── Page wrapper ── */
+  .page { max-width: 1400px; margin: 0 auto; padding: 80px 60px; }
+  .section { margin-bottom: 100px; page-break-inside: avoid; }
+
+  /* ── Section headers ── */
+  .section-label { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; margin-bottom: 10px; }
+  .section-title { font-size: 42px; font-weight: 900; letter-spacing: -1px; margin-bottom: 8px; }
+  .section-sub { font-size: 17px; color: #94a3b8; margin-bottom: 48px; }
+
+  .label-sky    { color: #38bdf8; }
+  .label-violet { color: #a78bfa; }
+  .label-emerald{ color: #34d399; }
+  .label-amber  { color: #fbbf24; }
+  .label-rose   { color: #fb7185; }
+
+  /* ── Divider ── */
+  .divider { height: 1px; background: linear-gradient(90deg, transparent, #334155, transparent); margin: 80px 0; }
+
+  /* ── Flow Journey ── */
+  .journey-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; align-items: start;
+  }
+  .journey-step { position: relative; text-align: center; }
+  .journey-step .step-connector {
+    position: absolute; top: 28px; left: calc(50% + 28px); width: calc(100% - 56px); height: 2px;
+    background: linear-gradient(90deg, #38bdf8, #7c3aed);
+  }
+  .journey-step:last-child .step-connector { display: none; }
+  .step-circle {
+    width: 56px; height: 56px; border-radius: 50%; margin: 0 auto 16px;
+    display: flex; align-items: center; justify-content: center; font-size: 22px;
+    font-weight: 900; position: relative; z-index: 1;
+    border: 3px solid;
+  }
+  .step-circle.sky     { background: rgba(56,189,248,0.1); border-color: #38bdf8; color: #38bdf8; }
+  .step-circle.violet  { background: rgba(167,139,250,0.1); border-color: #a78bfa; color: #a78bfa; }
+  .step-circle.emerald { background: rgba(52,211,153,0.1); border-color: #34d399; color: #34d399; }
+  .step-circle.amber   { background: rgba(251,191,36,0.1);  border-color: #fbbf24; color: #fbbf24; }
+  .step-circle.rose    { background: rgba(251,113,133,0.1); border-color: #fb7185; color: #fb7185; }
+  .step-title { font-size: 14px; font-weight: 700; color: #e2e8f0; margin-bottom: 6px; }
+  .step-desc  { font-size: 12px; color: #64748b; line-height: 1.5; padding: 0 8px; }
+
+  /* ── Screen Mockups ── */
+  .screens-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+  .screen-card {
+    background: #1e293b; border: 1px solid #334155; border-radius: 20px; overflow: hidden;
+    transition: transform .2s;
+  }
+  .screen-top-bar {
+    background: #0f172a; padding: 12px 16px; display: flex; align-items: center; gap: 8px;
+    border-bottom: 1px solid #334155;
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-red   { background: #ef4444; }
+  .dot-amber { background: #f59e0b; }
+  .dot-green { background: #22c55e; }
+  .url-bar {
+    flex: 1; background: #1e293b; border: 1px solid #334155; border-radius: 8px;
+    padding: 4px 10px; font-size: 11px; color: #64748b;
+  }
+  .screen-body { padding: 20px; }
+  .screen-title { font-size: 16px; font-weight: 800; color: #e2e8f0; margin-bottom: 6px; }
+  .screen-route { font-size: 11px; color: #38bdf8; font-weight: 600; margin-bottom: 14px; background: rgba(56,189,248,0.1); display: inline-block; padding: 3px 10px; border-radius: 100px; }
+  .screen-desc  { font-size: 13px; color: #94a3b8; line-height: 1.6; margin-bottom: 16px; }
+  .feature-list { list-style: none; }
+  .feature-list li { font-size: 12px; color: #cbd5e1; padding: 5px 0; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #1e293b; }
+  .feature-list li:last-child { border-bottom: none; }
+  .feat-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Screen mockup illustration inside card */
+  .mock {
+    background: #0f172a; border-radius: 10px; margin-bottom: 14px; overflow: hidden;
+    border: 1px solid #1e293b; min-height: 130px; position: relative;
+  }
+  .mock-hero {
+    height: 75px; display: flex; align-items: center; justify-content: center;
+    font-size: 28px; position: relative; overflow: hidden;
+  }
+  .mock-content { padding: 10px 12px; }
+  .mock-bar { height: 8px; border-radius: 100px; margin-bottom: 6px; }
+  .mock-bar.long  { width: 80%; }
+  .mock-bar.med   { width: 60%; }
+  .mock-bar.short { width: 40%; }
+  .mock-bar.sky    { background: linear-gradient(90deg,#0ea5e9,#38bdf8); }
+  .mock-bar.gray   { background: #334155; }
+  .mock-bar.violet { background: #7c3aed; }
+  .mock-bar.green  { background: #22c55e; }
+  .mock-bar.amber  { background: #f59e0b; }
+  .mock-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 10px 12px; }
+  .mock-tile { background: #1e293b; border-radius: 8px; height: 32px; }
+
+  /* ── Data Flow Diagram ── */
+  .flow-diagram { display: flex; gap: 0; align-items: stretch; overflow-x: auto; }
+  .flow-col { display: flex; flex-direction: column; gap: 12px; min-width: 200px; }
+  .flow-col-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; padding: 8px 12px; border-radius: 8px; text-align: center; margin-bottom: 4px; }
+  .flow-arrow { display: flex; align-items: center; padding: 0 16px; color: #475569; font-size: 24px; align-self: center; }
+  .flow-box {
+    background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 12px 14px;
+    font-size: 13px; color: #cbd5e1; position: relative;
+  }
+  .flow-box .box-icon { font-size: 18px; margin-bottom: 6px; }
+  .flow-box .box-title { font-weight: 700; font-size: 13px; color: #e2e8f0; margin-bottom: 3px; }
+  .flow-box .box-sub   { font-size: 11px; color: #64748b; }
+  .flow-box.highlight  { border-color: #0ea5e9; background: rgba(14,165,233,0.08); }
+  .flow-box.highlight2 { border-color: #7c3aed; background: rgba(124,58,237,0.08); }
+  .flow-box.highlight3 { border-color: #34d399; background: rgba(52,211,153,0.08); }
+
+  /* ── Tech Stack ── */
+  .stack-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  .stack-card {
+    background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 24px;
+    text-align: center;
+  }
+  .stack-icon { font-size: 32px; margin-bottom: 12px; }
+  .stack-name { font-size: 15px; font-weight: 700; color: #e2e8f0; margin-bottom: 4px; }
+  .stack-role { font-size: 12px; color: #64748b; }
+
+  /* ── User Roles ── */
+  .roles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+  .role-card {
+    background: #1e293b; border-radius: 20px; padding: 32px; border: 1px solid #334155;
+  }
+  .role-avatar { font-size: 40px; margin-bottom: 16px; }
+  .role-name { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+  .role-desc { font-size: 14px; color: #94a3b8; margin-bottom: 20px; line-height: 1.6; }
+  .role-perms { display: flex; flex-direction: column; gap: 8px; }
+  .perm { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #cbd5e1; }
+  .perm-check { width: 20px; height: 20px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
+  .perm-yes  { background: rgba(52,211,153,0.15); color: #34d399; }
+  .perm-no   { background: rgba(251,113,133,0.15); color: #fb7185; }
+
+  /* ── API Integrations ── */
+  .api-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .api-card {
+    background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 24px;
+  }
+  .api-badge { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 4px 10px; border-radius: 100px; margin-bottom: 14px; }
+  .api-name  { font-size: 18px; font-weight: 800; color: #e2e8f0; margin-bottom: 6px; }
+  .api-desc  { font-size: 13px; color: #94a3b8; line-height: 1.6; margin-bottom: 14px; }
+  .api-endpoints { display: flex; flex-direction: column; gap: 6px; }
+  .endpoint { font-size: 11px; font-family: 'Courier New', monospace; background: #0f172a; padding: 5px 10px; border-radius: 6px; color: #94a3b8; }
+  .endpoint span { color: #38bdf8; }
+
+  /* ── DB Schema ── */
+  .tables-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .table-card {
+    background: #1e293b; border: 1px solid #334155; border-radius: 16px; overflow: hidden;
+  }
+  .table-header { padding: 14px 16px; font-size: 14px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+  .table-body { padding: 0 16px 16px; }
+  .col-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #0f172a; font-size: 12px; }
+  .col-row:last-child { border-bottom: none; }
+  .col-name { color: #e2e8f0; font-family: 'Courier New', monospace; }
+  .col-type { color: #64748b; font-size: 11px; }
+  .col-pk   { background: rgba(251,191,36,0.15); color: #fbbf24; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
+  .col-fk   { background: rgba(167,139,250,0.15); color: #a78bfa; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
+  .col-null { background: rgba(100,116,139,0.15); color: #94a3b8; font-size: 10px; padding: 2px 6px; border-radius: 4px; }
+
+  /* ── Share Feature ── */
+  .share-flow { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+  .share-step { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 24px; flex: 1; min-width: 180px; text-align: center; }
+  .share-step .icon { font-size: 32px; margin-bottom: 12px; }
+  .share-step .title { font-size: 14px; font-weight: 700; color: #e2e8f0; margin-bottom: 6px; }
+  .share-step .desc  { font-size: 12px; color: #64748b; line-height: 1.5; }
+  .share-arrow { font-size: 24px; color: #334155; flex-shrink: 0; }
+  .platforms-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-top: 32px; }
+  .platform-pill {
+    border-radius: 12px; padding: 14px 10px; text-align: center;
+    font-size: 12px; font-weight: 700; border: 1px solid;
+  }
+  .p-wa     { background: rgba(37,211,102,0.1); border-color: #25d366; color: #25d366; }
+  .p-fb     { background: rgba(24,119,242,0.1); border-color: #1877f2; color: #1877f2; }
+  .p-tw     { background: rgba(100,116,139,0.1); border-color: #94a3b8; color: #94a3b8; }
+  .p-em     { background: rgba(56,189,248,0.1); border-color: #38bdf8; color: #38bdf8; }
+  .p-ig     { background: rgba(228,64,95,0.1); border-color: #e4405f; color: #e4405f; }
+  .p-tt     { background: rgba(100,116,139,0.1); border-color: #cbd5e1; color: #cbd5e1; }
+  .platform-icon { font-size: 22px; margin-bottom: 6px; }
+
+  /* ── Print ── */
+  @media print {
+    body { background: #fff; color: #000; }
+    .cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .section { page-break-inside: avoid; }
+    .divider { border-color: #e2e8f0; }
+  }
+
+  /* ── Gradient text ── */
+  .grad-sky    { background: linear-gradient(135deg,#38bdf8,#818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .grad-violet { background: linear-gradient(135deg,#a78bfa,#ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .grad-emerald{ background: linear-gradient(135deg,#34d399,#06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+  /* Page label */
+  .page-label {
+    position: fixed; top: 20px; right: 24px;
+    background: rgba(14,165,233,0.15); border: 1px solid #0ea5e9;
+    color: #38bdf8; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 100px;
+    pointer-events: none;
+  }
+
+  /* ── Legend/annotation boxes ── */
+  .note-box {
+    background: rgba(56,189,248,0.06); border: 1px solid rgba(56,189,248,0.2);
+    border-radius: 12px; padding: 16px 20px; font-size: 13px; color: #94a3b8; line-height: 1.6;
+    margin-top: 24px;
+  }
+  .note-box strong { color: #38bdf8; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     COVER PAGE
+══════════════════════════════════════════ -->
+<div class="cover">
+  <div class="cover-logo">🌍</div>
+  <h1>GlobePlanner</h1>
+  <p class="tagline">Complete App Design Document &amp; User Journey</p>
+  <div class="meta">
+    <div class="meta-item"><div class="label">Version</div><div class="value">1.0</div></div>
+    <div class="meta-item"><div class="label">Stack</div><div class="value">Laravel + React</div></div>
+    <div class="meta-item"><div class="label">Platform</div><div class="value">Web App</div></div>
+    <div class="meta-item"><div class="label">Date</div><div class="value">March 2026</div></div>
+  </div>
+  <div class="chips">
+    <span class="chip">✈️ Trip Planning</span>
+    <span class="chip">🗺️ Itinerary Generation</span>
+    <span class="chip">🏨 Hotel Discovery</span>
+    <span class="chip">❤️ Wishlist</span>
+    <span class="chip">📤 Share Trips</span>
+    <span class="chip">🔐 Authentication</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MAIN CONTENT
+══════════════════════════════════════════ -->
+<div class="page">
+
+  <!-- ── 1. USER JOURNEY OVERVIEW ── -->
+  <div class="section">
+    <div class="section-label label-sky">01 — User Journey</div>
+    <div class="section-title grad-sky">End-to-End User Flow</div>
+    <p class="section-sub">The complete journey a user takes from landing on the homepage to sharing their trip with friends.</p>
+
+    <div class="journey-grid">
+      <div class="journey-step">
+        <div class="step-connector"></div>
+        <div class="step-circle sky">1</div>
+        <div class="step-title">Discover</div>
+        <div class="step-desc">Land on Home page. Browse popular destinations. Read features overview.</div>
+      </div>
+      <div class="journey-step">
+        <div class="step-connector"></div>
+        <div class="step-circle violet">2</div>
+        <div class="step-title">Plan</div>
+        <div class="step-desc">Search destination with autocomplete. Set travelers, days, budget, category.</div>
+      </div>
+      <div class="journey-step">
+        <div class="step-connector"></div>
+        <div class="step-circle emerald">3</div>
+        <div class="step-title">Explore</div>
+        <div class="step-desc">View attractions, hotels, and a full day-by-day itinerary with images.</div>
+      </div>
+      <div class="journey-step">
+        <div class="step-connector"></div>
+        <div class="step-circle amber">4</div>
+        <div class="step-title">Save</div>
+        <div class="step-desc">Create an account, wishlist trips, revisit history from the dashboard.</div>
+      </div>
+      <div class="journey-step">
+        <div class="step-circle rose">5</div>
+        <div class="step-title">Share</div>
+        <div class="step-desc">Generate a public share link. Send via WhatsApp, Facebook, Instagram, TikTok &amp; more.</div>
+      </div>
+    </div>
+
+    <div class="note-box" style="margin-top:48px">
+      <strong>Note:</strong> Steps 1–3 are available to <strong>guests</strong> (no login required). Steps 4–5 require an authenticated account. Shared trip links (<code>/shared/{token}</code>) are publicly accessible — no login needed to view.
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ── 2. SCREEN INVENTORY ── -->
+  <div class="section">
+    <div class="section-label label-violet">02 — Screen Inventory</div>
+    <div class="section-title grad-violet">All Application Screens</div>
+    <p class="section-sub">Every page in the application with its route, purpose, and key UI elements.</p>
+
+    <div class="screens-grid">
+
+      <!-- Home -->
+      <div class="screen-card">
+        <div class="screen-top-bar">
+          <div class="dot dot-red"></div><div class="dot dot-amber"></div><div class="dot dot-green"></div>
+          <div class="url-bar">globeplanner.com/</div>
+        </div>
+        <div class="screen-body">
+          <div class="mock">
+            <div class="mock-hero" style="background:linear-gradient(135deg,#0369a1,#1e40af);">
+              <div style="text-align:center;position:relative;z-index:1">
+                <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:4px">🌍 GlobePlanner</div>
+                <div style="font-size:10px;color:#bae6fd;font-weight:700">Plan Your Perfect Trip, Anywhere</div>
+                <div style="display:flex;gap:4px;margin-top:8px;justify-content:center">
+                  <div style="background:rgba(255,255,255,0.15);border-radius:6px;padding:3px 8px;font-size:9px;color:#fff">📍 Search destination…</div>
+                  <div style="background:#0ea5e9;border-radius:6px;padding:3px 8px;font-size:9px;color:#fff;font-weight:700">Search</div>
+                </div>
+              </div>
+            </div>
+            <div class="mock-content">
+              <div class="mock-bar sky long"></div>
+              <div class="mock-grid" style="padding:6px 0 0">
+                <div class="mock-tile"></div><div class="mock-tile"></div>
+                <div class="mock-tile"></div><div class="mock-tile"></div>
+              </div>
+            </div>
+          </div>
+          <span class="screen-route">GET /</span>
+          <div class="screen-title">Home</div>
+          <p class="screen-desc">Landing page with hero search, featured destinations, features overview, Australia spotlight, testimonials, and CTA.</p>
+          <ul class="feature-list">
+            <li><div class="feat-dot" style="background:#38bdf8"></div>Hero with destination search</li>
+            <li><div class="feat-dot" style="background:#a78bfa"></div>6 popular destination cards</li>
+            <li><div class="feat-dot" style="background:#34d399"></div>How it works (4 steps)</li>
+            <li><div class="feat-dot" style="background:#fbbf24"></div>Testimonials + CTA</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Planner -->
+      <div class="screen-card">
+        <div class="screen-top-bar">
+          <div class="dot dot-red"></div><div class="dot dot-amber"></div><div class="dot dot-green"></div>
+          <div class="url-bar">globeplanner.com/planner</div>
+        </div>
+        <div class="screen-body">
+          <div class="mock">
+            <div class="mock-hero" style="background:#1e293b;align-items:flex-start;padding:12px;">
+              <div style="width:100%">
+                <div style="font-size:10px;color:#38bdf8;font-weight:700;margin-bottom:8px">✈️ Plan a New Trip</div>
+                <div style="background:#0f172a;border-radius:6px;padding:6px 8px;margin-bottom:6px;font-size:9px;color:#64748b">📍 Destination autocomplete…</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
+                  <div style="background:#0f172a;border-radius:5px;padding:5px 7px;font-size:9px;color:#64748b">👤 Travelers</div>
+                  <div style="background:#0f172a;border-radius:5px;padding:5px 7px;font-size:9px;color:#64748b">📅 Days</div>
+                  <div style="background:#0f172a;border-radius:5px;padding:5px 7px;font-size:9px;color:#64748b">🏷️ Category</div>
+                  <div style="background:#0f172a;border-radius:5px;padding:5px 7px;font-size:9px;color:#64748b">💰 Budget</div>
+                </div>
+              </div>
+            </div>
+            <div class="mock-content">
+              <div class="mock-bar sky short" style="margin:0 auto 0"></div>
+            </div>
+          </div>
+          <span class="screen-route">GET /planner</span>
+          <div class="screen-title">Trip Planner</div>
+          <p class="screen-desc">Smart form to configure your trip. Destination autocomplete powered by Geoapify. Submits to generate full trip plan.</p>
+          <ul class="feature-list">
+            <li><div class="feat-dot" style="background:#38bdf8"></div>Geoapify autocomplete</li>
+            <li><div class="feat-dot" style="background:#a78bfa"></div>Travelers (1–20)</li>
+            <li><div class="feat-dot" style="background:#34d399"></div>Duration (1–30 days)</li>
+            <li><div class="feat-dot" style="background:#fbbf24"></div>Category: Standard / Premium / Luxury</li>
+            <li><div class="feat-dot" style="background:#fb7185"></div>Budget: Low / Medium / High</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Trip Results -->
+      <div class="screen-card">
+        <div class="screen-top-bar">
+          <div class="dot dot-red"></div><div class="dot dot-amber"></div><div class="dot dot-green"></div>
+          <div class="url-bar">globeplanner.com/trips/42</div>
+        </div>
+        <div class="screen-body">
+          <div class="mock">
+            <div class="mock-hero" style="background:linear-gradient(135deg,#064e3b,#0369a1)">
+              <div style="text-align:center">
+                <div style="font-size:9px;color:rgba(255,255,255,0.6)">🌏 Bali, Indonesia</div>
+                <div style="font-size:14px;font-weight:900;color:#fff">Bali</div>
+                <div style="display:flex;gap:4px;justify-content:center;margin-top:6px">
+                  <div style="background:rgba(255,255,255,0.2);border-radius:100px;padding:2px 8px;font-size:8px;color:#fff">Premium</div>
+                  <div style="background:rgba(255,255,255,0.2);border-radius:100px;padding:2px 8px;font-size:8px;color:#fff">7 days</div>
+                </div>
+              </div>
+            </div>
+            <div class="mock-content">
+              <div class="mock-bar sky long"></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:6px">
+                <div class="mock-tile" style="height:24px"></div>
+                <div class="mock-tile" style="height:24px"></div>
+                <div class="mock-tile" style="height:24px"></div>
+              </div>
+            </div>
+          </div>
+          <span class="screen-route">GET /trips/{id} &nbsp;|&nbsp; GET /shared/{token}</span>
+          <div class="screen-title">Trip Results</div>
+          <p class="screen-desc">Full trip plan with destination overview, real attractions, curated hotels, day-by-day itinerary with images, and sidebar info.</p>
+          <ul class="feature-list">
+            <li><div class="feat-dot" style="background:#38bdf8"></div>Hero with wishlist + share buttons</li>
+            <li><div class="feat-dot" style="background:#a78bfa"></div>Top attractions (real data)</li>
+            <li><div class="feat-dot" style="background:#34d399"></div>Hotel recommendations</li>
+            <li><div class="feat-dot" style="background:#fbbf24"></div>Day-by-day itinerary with images</li>
+            <li><div class="feat-dot" style="background:#fb7185"></div>Best time to visit sidebar</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Dashboard -->
+      <div class="screen-card">
+        <div class="screen-top-bar">
+          <div class="dot dot-red"></div><div class="dot dot-amber"></div><div class="dot dot-green"></div>
+          <div class="url-bar">globeplanner.com/dashboard</div>
+        </div>
+        <div class="screen-body">
+          <div class="mock">
+            <div style="background:#0f172a;padding:10px 12px">
+              <div style="font-size:10px;color:#e2e8f0;font-weight:800;margin-bottom:8px">My Travel Dashboard</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;margin-bottom:8px">
+                <div style="background:#1e293b;border-radius:6px;padding:5px;text-align:center"><div style="font-size:14px;font-weight:900;color:#38bdf8">12</div><div style="font-size:8px;color:#64748b">Trips</div></div>
+                <div style="background:#1e293b;border-radius:6px;padding:5px;text-align:center"><div style="font-size:14px;font-weight:900;color:#a78bfa">8</div><div style="font-size:8px;color:#64748b">Places</div></div>
+                <div style="background:#1e293b;border-radius:6px;padding:5px;text-align:center"><div style="font-size:14px;font-weight:900;color:#34d399">64</div><div style="font-size:8px;color:#64748b">Days</div></div>
+                <div style="background:#1e293b;border-radius:6px;padding:5px;text-align:center"><div style="font-size:14px;font-weight:900;color:#fb7185">5</div><div style="font-size:8px;color:#64748b">Wishlist</div></div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px">
+                <div style="background:#1e293b;border-radius:6px;height:40px"></div>
+                <div style="background:#1e293b;border-radius:6px;height:40px"></div>
+                <div style="background:#1e293b;border-radius:6px;height:40px"></div>
+              </div>
+            </div>
+          </div>
+          <span class="screen-route">GET /dashboard &nbsp;(auth)</span>
+          <div class="screen-title">Dashboard</div>
+          <p class="screen-desc">Personal hub showing all saved trips. Filter by Search History or Wishlist. Search trips, view stats, delete or share any trip.</p>
+          <ul class="feature-list">
+            <li><div class="feat-dot" style="background:#38bdf8"></div>Stats: trips, destinations, days, wishlist</li>
+            <li><div class="feat-dot" style="background:#a78bfa"></div>History tab &amp; Wishlist tab</li>
+            <li><div class="feat-dot" style="background:#34d399"></div>Search + filter trips</li>
+            <li><div class="feat-dot" style="background:#fbbf24"></div>Share, wishlist, delete per card</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Login -->
+      <div class="screen-card">
+        <div class="screen-top-bar">
+          <div class="dot dot-red"></div><div class="dot dot-amber"></div><div class="dot dot-green"></div>
+          <div class="url-bar">globeplanner.com/login</div>
+        </div>
+        <div class="screen-body">
+          <div class="mock">
+            <div style="background:#0f172a;padding:16px;display:flex;flex-direction:column;align-items:center;gap:8px">
+              <div style="font-size:20px">🔐</div>
+              <div style="font-size:10px;color:#e2e8f0;font-weight:700">Welcome Back</div>
+              <div style="width:100%;background:#1e293b;border-radius:6px;padding:6px 8px;font-size:9px;color:#64748b">✉️ Email address</div>
+              <div style="width:100%;background:#1e293b;border-radius:6px;padding:6px 8px;font-size:9px;color:#64748b">🔒 Password</div>
+              <div style="width:100%;background:#0ea5e9;border-radius:6px;padding:6px;font-size:9px;color:#fff;text-align:center;font-weight:700">Sign In</div>
+            </div>
+          </div>
+          <span class="screen-route">GET /login &nbsp;(guest only)</span>
+          <div class="screen-title">Login</div>
+          <p class="screen-desc">Authenticated session using Laravel's session-based auth. Guest middleware prevents logged-in users from accessing this page.</p>
+          <ul class="feature-list">
+            <li><div class="feat-dot" style="background:#38bdf8"></div>Email + password form</li>
+            <li><div class="feat-dot" style="background:#a78bfa"></div>Inertia redirect on success</li>
+            <li><div class="feat-dot" style="background:#34d399"></div>Guest middleware guard</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Register -->
+      <div class="screen-card">
+        <div class="screen-top-bar">
+          <div class="dot dot-red"></div><div class="dot dot-amber"></div><div class="dot dot-green"></div>
+          <div class="url-bar">globeplanner.com/register</div>
+        </div>
+        <div class="screen-body">
+          <div class="mock">
+            <div style="background:#0f172a;padding:16px;display:flex;flex-direction:column;align-items:center;gap:8px">
+              <div style="font-size:20px">✨</div>
+              <div style="font-size:10px;color:#e2e8f0;font-weight:700">Create Account</div>
+              <div style="width:100%;background:#1e293b;border-radius:6px;padding:6px 8px;font-size:9px;color:#64748b">👤 Full name</div>
+              <div style="width:100%;background:#1e293b;border-radius:6px;padding:6px 8px;font-size:9px;color:#64748b">✉️ Email address</div>
+              <div style="width:100%;background:#1e293b;border-radius:6px;padding:6px 8px;font-size:9px;color:#64748b">🔒 Password</div>
+              <div style="width:100%;background:linear-gradient(135deg,#0ea5e9,#7c3aed);border-radius:6px;padding:6px;font-size:9px;color:#fff;text-align:center;font-weight:700">Create Free Account</div>
+            </div>
+          </div>
+          <span class="screen-route">GET /register &nbsp;(guest only)</span>
+          <div class="screen-title">Register</div>
+          <p class="screen-desc">New user registration. Creates account and automatically signs in. Free — no credit card required.</p>
+          <ul class="feature-list">
+            <li><div class="feat-dot" style="background:#38bdf8"></div>Name, email, password fields</li>
+            <li><div class="feat-dot" style="background:#a78bfa"></div>Password confirmation</li>
+            <li><div class="feat-dot" style="background:#34d399"></div>Auto-login after registration</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ── 3. DATA FLOW ── -->
+  <div class="section">
+    <div class="section-label label-emerald">03 — Data Flow</div>
+    <div class="section-title grad-emerald">Request &amp; Response Architecture</div>
+    <p class="section-sub">How a trip generation request flows from the browser through the backend and back.</p>
+
+    <div class="flow-diagram">
+      <!-- Browser -->
+      <div class="flow-col">
+        <div class="flow-col-title" style="background:rgba(56,189,248,0.1);color:#38bdf8">🖥️ Browser</div>
+        <div class="flow-box highlight">
+          <div class="box-icon">📍</div>
+          <div class="box-title">DestinationSearch</div>
+          <div class="box-sub">Debounced GET /api/places/autocomplete?input=…</div>
+        </div>
+        <div class="flow-box highlight">
+          <div class="box-icon">📋</div>
+          <div class="box-title">TripPlannerForm</div>
+          <div class="box-sub">POST /planner/generate with validated form data + lat/lon</div>
+        </div>
+        <div class="flow-box highlight">
+          <div class="box-icon">❤️</div>
+          <div class="box-title">Wishlist / Share / Delete</div>
+          <div class="box-sub">Axios POST/DELETE with CSRF token header</div>
+        </div>
+      </div>
+
+      <div class="flow-arrow">→</div>
+
+      <!-- Laravel Controller -->
+      <div class="flow-col">
+        <div class="flow-col-title" style="background:rgba(167,139,250,0.1);color:#a78bfa">⚙️ TripController</div>
+        <div class="flow-box highlight2">
+          <div class="box-icon">🔍</div>
+          <div class="box-title">autocomplete()</div>
+          <div class="box-sub">Delegates to GeoapifyService → returns JSON suggestions</div>
+        </div>
+        <div class="flow-box highlight2">
+          <div class="box-icon">🚀</div>
+          <div class="box-title">generate()</div>
+          <div class="box-sub">Validates input → calls TravelApiService → saves Trip → renders Inertia page</div>
+        </div>
+        <div class="flow-box highlight2">
+          <div class="box-icon">🔗</div>
+          <div class="box-title">generateShareLink()</div>
+          <div class="box-sub">Creates unique share_token (Str::random 48) → returns public URL</div>
+        </div>
+        <div class="flow-box highlight2">
+          <div class="box-icon">🌐</div>
+          <div class="box-title">showShared()</div>
+          <div class="box-sub">Finds trip by token → renders read-only TripResults (no auth)</div>
+        </div>
+      </div>
+
+      <div class="flow-arrow">→</div>
+
+      <!-- Services -->
+      <div class="flow-col">
+        <div class="flow-col-title" style="background:rgba(52,211,153,0.1);color:#34d399">🔧 Services</div>
+        <div class="flow-box highlight3">
+          <div class="box-icon">🌍</div>
+          <div class="box-title">GeoapifyService</div>
+          <div class="box-sub">autocomplete, geocode, getNearbyPlaces, getNearbyHotels</div>
+        </div>
+        <div class="flow-box highlight3">
+          <div class="box-icon">✈️</div>
+          <div class="box-title">TravelApiService</div>
+          <div class="box-sub">generateTripPlan → real attractions + hotels + itinerary + overview</div>
+        </div>
+      </div>
+
+      <div class="flow-arrow">→</div>
+
+      <!-- External -->
+      <div class="flow-col">
+        <div class="flow-col-title" style="background:rgba(251,191,36,0.1);color:#fbbf24">🌐 External APIs</div>
+        <div class="flow-box">
+          <div class="box-icon">📡</div>
+          <div class="box-title">Geoapify Autocomplete</div>
+          <div class="box-sub">api.geoapify.com/v1/geocode/autocomplete</div>
+        </div>
+        <div class="flow-box">
+          <div class="box-icon">🗺️</div>
+          <div class="box-title">Geoapify Places</div>
+          <div class="box-sub">api.geoapify.com/v2/places — nearby attractions &amp; hotels</div>
+        </div>
+        <div class="flow-box">
+          <div class="box-icon">🖼️</div>
+          <div class="box-title">Picsum Photos</div>
+          <div class="box-sub">Seed-based placeholder images for destinations, hotels, itinerary</div>
+        </div>
+      </div>
+
+      <div class="flow-arrow">→</div>
+
+      <!-- DB -->
+      <div class="flow-col">
+        <div class="flow-col-title" style="background:rgba(251,113,133,0.1);color:#fb7185">🗄️ SQLite DB</div>
+        <div class="flow-box">
+          <div class="box-icon">👤</div>
+          <div class="box-title">users</div>
+          <div class="box-sub">id, name, email, password, timestamps</div>
+        </div>
+        <div class="flow-box">
+          <div class="box-icon">✈️</div>
+          <div class="box-title">trips</div>
+          <div class="box-sub">destination, travelers, days, category, budget, attractions JSON, hotels JSON, itinerary JSON, wishlisted, share_token</div>
+        </div>
+        <div class="flow-box">
+          <div class="box-icon">🏨</div>
+          <div class="box-title">bookings</div>
+          <div class="box-sub">trip_id, type, name, price, date</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ── 4. SHARE FEATURE FLOW ── -->
+  <div class="section">
+    <div class="section-label label-amber">04 — Share Feature</div>
+    <div class="section-title" style="background:linear-gradient(135deg,#fbbf24,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Trip Sharing System</div>
+    <p class="section-sub">How a trip gets shared and viewed by anyone, without requiring them to log in.</p>
+
+    <div class="share-flow">
+      <div class="share-step">
+        <div class="icon">🔐</div>
+        <div class="title">Owner clicks Share</div>
+        <div class="desc">Only the trip owner sees the Share button in TripResults hero or Dashboard card</div>
+      </div>
+      <div class="share-arrow">→</div>
+      <div class="share-step">
+        <div class="icon">⚙️</div>
+        <div class="title">POST /trips/{id}/share</div>
+        <div class="desc">Controller checks ownership (403 if not owner). Generates 48-char random token if none exists</div>
+      </div>
+      <div class="share-arrow">→</div>
+      <div class="share-step">
+        <div class="icon">🔗</div>
+        <div class="title">URL returned</div>
+        <div class="desc">Returns <code style="font-size:10px;color:#38bdf8">/shared/{token}</code> — unique, permanent public URL</div>
+      </div>
+      <div class="share-arrow">→</div>
+      <div class="share-step">
+        <div class="icon">📤</div>
+        <div class="title">Modal opens</div>
+        <div class="desc">Copy button + 6 share platform options displayed in a modal overlay</div>
+      </div>
+      <div class="share-arrow">→</div>
+      <div class="share-step">
+        <div class="icon">👁️</div>
+        <div class="title">Anyone views</div>
+        <div class="desc">Recipient opens the link — sees full trip in read-only mode. No login required</div>
+      </div>
+    </div>
+
+    <div class="platforms-grid">
+      <div class="platform-pill p-wa">
+        <div class="platform-icon">💬</div>
+        WhatsApp
+        <div style="font-size:10px;margin-top:4px;opacity:0.7">wa.me direct link</div>
+      </div>
+      <div class="platform-pill p-fb">
+        <div class="platform-icon">👍</div>
+        Facebook
+        <div style="font-size:10px;margin-top:4px;opacity:0.7">sharer.php URL</div>
+      </div>
+      <div class="platform-pill p-tw">
+        <div class="platform-icon">✖️</div>
+        X / Twitter
+        <div style="font-size:10px;margin-top:4px;opacity:0.7">intent/tweet URL</div>
+      </div>
+      <div class="platform-pill p-em">
+        <div class="platform-icon">📧</div>
+        Email
+        <div style="font-size:10px;margin-top:4px;opacity:0.7">mailto: link</div>
+      </div>
+      <div class="platform-pill p-ig">
+        <div class="platform-icon">📸</div>
+        Instagram
+        <div style="font-size:10px;margin-top:4px;opacity:0.7">Copy link (no web API)</div>
+      </div>
+      <div class="platform-pill p-tt">
+        <div class="platform-icon">🎵</div>
+        TikTok
+        <div style="font-size:10px;margin-top:4px;opacity:0.7">Copy link (no web API)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ── 5. DATABASE SCHEMA ── -->
+  <div class="section">
+    <div class="section-label label-rose">05 — Database Schema</div>
+    <div class="section-title" style="background:linear-gradient(135deg,#fb7185,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">SQLite Database Design</div>
+    <p class="section-sub">Three core tables powering all features. JSON columns store nested trip data directly.</p>
+
+    <div class="tables-grid">
+      <!-- users -->
+      <div class="table-card">
+        <div class="table-header" style="background:rgba(56,189,248,0.1);color:#38bdf8">
+          👤 users
+        </div>
+        <div class="table-body">
+          <div class="col-row"><span class="col-name">id</span><div style="display:flex;gap:6px;align-items:center"><span class="col-type">bigint</span><span class="col-pk">PK</span></div></div>
+          <div class="col-row"><span class="col-name">name</span><span class="col-type">varchar(255)</span></div>
+          <div class="col-row"><span class="col-name">email</span><span class="col-type">varchar unique</span></div>
+          <div class="col-row"><span class="col-name">password</span><span class="col-type">varchar</span></div>
+          <div class="col-row"><span class="col-name">created_at</span><span class="col-type">timestamp</span></div>
+          <div class="col-row"><span class="col-name">updated_at</span><span class="col-type">timestamp</span></div>
+        </div>
+      </div>
+
+      <!-- trips -->
+      <div class="table-card">
+        <div class="table-header" style="background:rgba(167,139,250,0.1);color:#a78bfa">
+          ✈️ trips
+        </div>
+        <div class="table-body">
+          <div class="col-row"><span class="col-name">id</span><div style="display:flex;gap:6px"><span class="col-type">bigint</span><span class="col-pk">PK</span></div></div>
+          <div class="col-row"><span class="col-name">user_id</span><div style="display:flex;gap:6px"><span class="col-type">bigint</span><span class="col-fk">FK</span></div></div>
+          <div class="col-row"><span class="col-name">destination</span><span class="col-type">varchar(255)</span></div>
+          <div class="col-row"><span class="col-name">destination_place_id</span><div style="display:flex;gap:6px"><span class="col-type">varchar</span><span class="col-null">null</span></div></div>
+          <div class="col-row"><span class="col-name">travelers</span><span class="col-type">integer</span></div>
+          <div class="col-row"><span class="col-name">duration_days</span><span class="col-type">integer</span></div>
+          <div class="col-row"><span class="col-name">category</span><span class="col-type">varchar</span></div>
+          <div class="col-row"><span class="col-name">budget</span><span class="col-type">varchar</span></div>
+          <div class="col-row"><span class="col-name">attractions</span><span class="col-type">json</span></div>
+          <div class="col-row"><span class="col-name">hotels</span><span class="col-type">json</span></div>
+          <div class="col-row"><span class="col-name">itinerary</span><span class="col-type">json</span></div>
+          <div class="col-row"><span class="col-name">wishlisted</span><span class="col-type">boolean</span></div>
+          <div class="col-row"><span class="col-name">share_token</span><div style="display:flex;gap:6px"><span class="col-type">varchar unique</span><span class="col-null">null</span></div></div>
+          <div class="col-row"><span class="col-name">notes</span><div style="display:flex;gap:6px"><span class="col-type">text</span><span class="col-null">null</span></div></div>
+        </div>
+      </div>
+
+      <!-- bookings -->
+      <div class="table-card">
+        <div class="table-header" style="background:rgba(52,211,153,0.1);color:#34d399">
+          🏨 bookings
+        </div>
+        <div class="table-body">
+          <div class="col-row"><span class="col-name">id</span><div style="display:flex;gap:6px"><span class="col-type">bigint</span><span class="col-pk">PK</span></div></div>
+          <div class="col-row"><span class="col-name">trip_id</span><div style="display:flex;gap:6px"><span class="col-type">bigint</span><span class="col-fk">FK</span></div></div>
+          <div class="col-row"><span class="col-name">user_id</span><div style="display:flex;gap:6px"><span class="col-type">bigint</span><span class="col-fk">FK</span></div></div>
+          <div class="col-row"><span class="col-name">type</span><span class="col-type">varchar (hotel/attraction)</span></div>
+          <div class="col-row"><span class="col-name">name</span><span class="col-type">varchar(255)</span></div>
+          <div class="col-row"><span class="col-name">price</span><span class="col-type">decimal</span></div>
+          <div class="col-row"><span class="col-name">date</span><span class="col-type">date</span></div>
+          <div class="col-row"><span class="col-name">created_at</span><span class="col-type">timestamp</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ── 6. USER ROLES ── -->
+  <div class="section">
+    <div class="section-label label-sky">06 — User Roles</div>
+    <div class="section-title grad-sky">Guest vs Authenticated</div>
+    <p class="section-sub">Feature access matrix for anonymous visitors vs signed-in users.</p>
+
+    <div class="roles-grid">
+      <div class="role-card" style="border-color:#334155">
+        <div class="role-avatar">👤</div>
+        <div class="role-name" style="color:#94a3b8">Guest User</div>
+        <div class="role-desc">Anyone who visits without an account. Can still plan trips and view results — no login gate on the core experience.</div>
+        <div class="role-perms">
+          <div class="perm"><div class="perm-check perm-yes">✓</div>Browse home page</div>
+          <div class="perm"><div class="perm-check perm-yes">✓</div>Search destinations (autocomplete)</div>
+          <div class="perm"><div class="perm-check perm-yes">✓</div>Generate trip plan</div>
+          <div class="perm"><div class="perm-check perm-yes">✓</div>View attractions &amp; hotels</div>
+          <div class="perm"><div class="perm-check perm-yes">✓</div>View shared trip links (/shared/…)</div>
+          <div class="perm"><div class="perm-check perm-no">✗</div>Save trips to dashboard</div>
+          <div class="perm"><div class="perm-check perm-no">✗</div>Wishlist trips</div>
+          <div class="perm"><div class="perm-check perm-no">✗</div>Share trip link</div>
+          <div class="perm"><div class="perm-check perm-no">✗</div>Access /dashboard</div>
+          <div class="perm"><div class="perm-check perm-no">✗</div>Delete trips</div>
+        </div>
+      </div>
+
+      <div class="role-card" style="border-color:#0ea5e9;background:rgba(14,165,233,0.04)">
+        <div class="role-avatar">🔐</div>
+        <div class="role-name" style="color:#38bdf8">Authenticated User</div>
+        <div class="role-desc">Signed-in users get the full experience — trips are automatically saved, and they can manage their travel history.</div>
+        <div class="role-perms">
+          <div class="perm"><div class="perm-check perm-yes">✓</div>Everything a guest can do</div>
+          <div class="perm"><div class="perm-check perm-yes">✓</div>Trips auto-saved on generation</div>
+          <div class="perm"><div class="perm-check perm-yes">✓</div>Wishlist / un-wishlist trips</div>
+          <div class="perm"><div class="perm-check perm-yes">✓</div>Generate &amp; share trip links</div>
+          <div class="perm"><div class="perm-check perm-yes">✓</div>Access personal dashboard</div>
+          <div class="perm"><div class="perm-check perm-yes">✓</div>Delete trips from dashboard</div>
+          <div class="perm"><div class="perm-check perm-yes">✓</div>Re-view any saved trip result</div>
+          <div class="perm"><div class="perm-check perm-no">✗</div>View other users' private trips</div>
+          <div class="perm"><div class="perm-check perm-no">✗</div>Modify other users' data</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ── 7. TECH STACK ── -->
+  <div class="section">
+    <div class="section-label label-violet">07 — Tech Stack</div>
+    <div class="section-title grad-violet">Technology Overview</div>
+    <p class="section-sub">The complete set of technologies, frameworks, and services powering GlobePlanner.</p>
+
+    <div class="stack-grid">
+      <div class="stack-card">
+        <div class="stack-icon">🐘</div>
+        <div class="stack-name">Laravel 12</div>
+        <div class="stack-role">Backend Framework — routing, controllers, Eloquent ORM, auth, service container</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">⚛️</div>
+        <div class="stack-name">React 19</div>
+        <div class="stack-role">Frontend UI — component-based SPA views rendered via Inertia.js</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">🔀</div>
+        <div class="stack-name">Inertia.js</div>
+        <div class="stack-role">SPA bridge — server-side routing with client-side React rendering, no API layer needed</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">🎨</div>
+        <div class="stack-name">Tailwind CSS v4</div>
+        <div class="stack-role">Utility-first styling — @import syntax, @tailwindcss/vite plugin, no config file</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">⚡</div>
+        <div class="stack-name">Vite 8</div>
+        <div class="stack-role">Build tool — hot module reload, code splitting, asset bundling with @vitejs/plugin-react v6</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">🗃️</div>
+        <div class="stack-name">SQLite</div>
+        <div class="stack-role">Database — file-based, zero config, stores users/trips/bookings with JSON columns</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">🌍</div>
+        <div class="stack-name">Geoapify</div>
+        <div class="stack-role">Location APIs — autocomplete, geocoding, nearby places &amp; hotels (real data)</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">🖼️</div>
+        <div class="stack-name">Picsum Photos</div>
+        <div class="stack-role">Seed-based placeholder images — consistent per destination/hotel/itinerary day</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ── 8. API INTEGRATIONS ── -->
+  <div class="section">
+    <div class="section-label label-emerald">08 — API Integrations</div>
+    <div class="section-title grad-emerald">External Services</div>
+    <p class="section-sub">The third-party APIs integrated into GlobePlanner and how they are used.</p>
+
+    <div class="api-grid">
+      <div class="api-card">
+        <span class="api-badge" style="background:rgba(56,189,248,0.1);color:#38bdf8">Location</span>
+        <div class="api-name">Geoapify</div>
+        <div class="api-desc">Powers destination search autocomplete, city geocoding, and real nearby attractions &amp; hotel discovery within a 10km radius.</div>
+        <div class="api-endpoints">
+          <div class="endpoint"><span>GET</span> /v1/geocode/autocomplete</div>
+          <div class="endpoint"><span>GET</span> /v1/geocode/search</div>
+          <div class="endpoint"><span>GET</span> /v2/places?categories=tourism…</div>
+          <div class="endpoint"><span>GET</span> /v2/places?categories=accommodation…</div>
+        </div>
+      </div>
+
+      <div class="api-card">
+        <span class="api-badge" style="background:rgba(251,191,36,0.1);color:#fbbf24">Images</span>
+        <div class="api-name">Picsum Photos</div>
+        <div class="api-desc">Consistent placeholder images based on seed strings. Each destination, hotel, and itinerary day gets a unique, reproducible image.</div>
+        <div class="api-endpoints">
+          <div class="endpoint"><span>GET</span> picsum.photos/seed/{city}/1200/800</div>
+          <div class="endpoint"><span>GET</span> picsum.photos/seed/{name}hotel/800/600</div>
+          <div class="endpoint"><span>GET</span> picsum.photos/seed/{city}{day}/600/400</div>
+        </div>
+      </div>
+
+      <div class="api-card">
+        <span class="api-badge" style="background:rgba(251,113,133,0.1);color:#fb7185">Search</span>
+        <div class="api-name">Google Search</div>
+        <div class="api-desc">Used for external booking and ticket discovery. Clicking "Book Now" or "Search on Google" opens a new tab with a targeted Google search query.</div>
+        <div class="api-endpoints">
+          <div class="endpoint"><span>GET</span> google.com/search?q=book+{hotel}+hotel</div>
+          <div class="endpoint"><span>GET</span> google.com/search?q={attraction}+tickets</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ── 9. ROUTES TABLE ── -->
+  <div class="section">
+    <div class="section-label label-amber">09 — Route Map</div>
+    <div class="section-title" style="background:linear-gradient(135deg,#fbbf24,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">All Application Routes</div>
+    <p class="section-sub">Every URL in the application, its method, auth requirement, and what it does.</p>
+
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead>
+        <tr style="border-bottom:2px solid #334155">
+          <th style="text-align:left;padding:10px 14px;color:#64748b;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:1px">Method</th>
+          <th style="text-align:left;padding:10px 14px;color:#64748b;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:1px">URI</th>
+          <th style="text-align:left;padding:10px 14px;color:#64748b;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:1px">Controller</th>
+          <th style="text-align:left;padding:10px 14px;color:#64748b;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:1px">Auth</th>
+          <th style="text-align:left;padding:10px 14px;color:#64748b;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:1px">Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid #1e293b">
+          <td style="padding:10px 14px"><span style="background:rgba(56,189,248,0.1);color:#38bdf8;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:700">GET</span></td>
+          <td style="padding:10px 14px;color:#cbd5e1;font-family:monospace">/</td>
+          <td style="padding:10px 14px;color:#64748b">Closure → Home</td>
+          <td style="padding:10px 14px"><span style="color:#34d399;font-size:11px">Public</span></td>
+          <td style="padding:10px 14px;color:#94a3b8">Landing page</td>
+        </tr>
+        <tr style="border-bottom:1px solid #1e293b">
+          <td style="padding:10px 14px"><span style="background:rgba(56,189,248,0.1);color:#38bdf8;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:700">GET</span></td>
+          <td style="padding:10px 14px;color:#cbd5e1;font-family:monospace">/login</td>
+          <td style="padding:10px 14px;color:#64748b">AuthController@showLogin</td>
+          <td style="padding:10px 14px"><span style="color:#fbbf24;font-size:11px">Guest only</span></td>
+          <td style="padding:10px 14px;color:#94a3b8">Show login form</td>
+        </tr>
+        <tr style="border-bottom:1px solid #1e293b">
+          <td style="padding:10px 14px"><span style="background:rgba(167,139,250,0.1);color:#a78bfa;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:700">POST</span></td>
+          <td style="padding:10px 14px;color:#cbd5e1;font-family:monospace">/login</td>
+          <td style="padding:10px 14px;color:#64748b">AuthController@login</td>
+          <td style="padding:10px 14px"><span style="color:#fbbf24;font-size:11px">Guest only</span></td>
+          <td style="padding:10px 14px;color:#94a3b8">Authenticate user</td>
+        </tr>
+        <tr style="border-bottom:1px solid #1e293b">
+          <td style="padding:10px 14px"><span style="background:rgba(56,189,248,0.1);color:#38bdf8;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:700">GET</span></td>
+          <td style="padding:10px 14px;color:#cbd5e1;font-family:monospace">/register</td>
+          <td style="padding:10px 14px;color:#64748b">AuthController@showRegister</td>
+          <td style="padding:10px 14px"><span style="color:#fbbf24;font-size:11px">Guest only</span></td>
+          <td style="padding:10px 14px;color:#94a3b8">Show register form</td>
+        </tr>
+        <tr style="border-bottom:1px solid #1e293b">
+          <td style="padding:10px 14px"><span style="background:rgba(167,139,250,0.1);color:#a78bfa;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:700">POST</span></td>
+          <td style="padding:10px 14px;color:#cbd5e1;font-family:monospace">/register</td>
+          <td style="padding:10px 14px;color:#64748b">AuthController@register</td>
+          <td style="padding:10px 14px"><span style="color:#fbbf24;font-size:11px">Guest only</span></td>
+          <td style="padding:10px 14px;color:#94a3b8">Create new account</td>
+        </tr>
+        <tr style="border-bottom:1px solid #1e293b">
+          <td style="padding:10px 14px"><span style="background:rgba(167,139,250,0.1);color:#a78bfa;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:700">POST</span></td>
+          <td style="padding:10px 14px;color:#cbd5e1;font-family:monospace">/logout</td>
+          <td style="padding:10px 14px;color:#64748b">AuthController@logout</td>
+          <td style="padding:10px 14px"><span style="color:#fb7185;font-size:11px">Auth</span></td>
+          <td style="padding:10px 14px;color:#94a3b8">Destroy session</td>
+        </tr>
+        <tr style="border-bottom:1px solid #1e293b">
+          <td style="padding:10px 14px"><span style="background:rgba(56,189,248,0.1);color:#38bdf8;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:700">GET</span></td>
+          <td style="padding:10px 14px;color:#cbd5e1;font-family:monospace">/planner</td>
+          <td style="padding:10px 14px;color:#64748b">TripController@index</td>
+          <td style="padding:10px 14px"><span style="color:#34d399;font-size:11px">Public</span></td>
+          <td style="padding:10px 14px;color:#94a3b8">Show trip planner form</td>
+        </tr>
+        <tr style="border-bottom:1px solid #1e293b">
+          <td style="padding:10px 14px"><span style="background:rgba(167,139,250,0.1);color:#a78bfa;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:700">POST</span></td>
+          <td style="padding:10px 14px;color:#cbd5e1;font-family:monospace">/planner/generate</td>
+          <td style="padding:10px 14px;color:#64748b">TripController@generate</td>
+          <td style="padding:10px 14px"><span style="color:#34d399;font-size:11px">Public</span></td>
+          <td style="padding:10px 14px;color:#94a3b8">Generate trip plan (saves if logged in)</td>
+        </tr>
+        <tr style="border-bottom:1px solid #1e293b">
+          <td style="padding:10px 14px"><span style="background:rgba(56,189,248,0.1);color:#38bdf8;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:700">GET</span></td>
+          <td style="padding:10px 14px;color:#cbd5e1;font-family:monospace">/api/places/autocomplete</td>
+          <td style="padding:10px 14px;color:#64748b">TripController@autocomplete</td>
+          <td style="padding:10px 14px"><span style="color:#34d399;font-size:11px">Public</span></td>
+          <td style="padding:10px 14px;color:#94a3b8">Geoapify autocomplete proxy</td>
+        </tr>
+        <tr style="border-bottom:1px solid #1e293b">
+          <td style="padding:10px 14px"><span style="background:rgba(56,189,248,0.1);color:#38bdf8;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:700">GET</span></td>
+          <td style="padding:10px 14px;color:#cbd5e1;font-family:monospace">/shared/{token}</td>
+          <td style="padding:10px 14px;color:#64748b">TripController@showShared</td>
+          <td style="padding:10px 14px"><span style="color:#34d399;font-size:11px">Public</span></td>
+          <td style="padding:10px 14px;color:#94a3b8">Read-only shared trip view</td>
+        </tr>
+        <tr style="border-bottom:1px solid #1e293b">
+          <td style="padding:10px 14px"><span style="background:rgba(56,189,248,0.1);color:#38bdf8;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:700">GET</span></td>
+          <td style="padding:10px 14px;color:#cbd5e1;font-family:monospace">/dashboard</td>
+          <td style="padding:10px 14px;color:#64748b">TripController@dashboard</td>
+          <td style="padding:10px 14px"><span style="color:#fb7185;font-size:11px">Auth</span></td>
+          <td style="padding:10px 14px;color:#94a3b8">Personal trips dashboard</td>
+        </tr>
+        <tr style="border-bottom:1px solid #1e293b">
+          <td style="padding:10px 14px"><span style="background:rgba(56,189,248,0.1);color:#38bdf8;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:700">GET</span></td>
+          <td style="padding:10px 14px;color:#cbd5e1;font-family:monospace">/trips/{trip}</td>
+          <td style="padding:10px 14px;color:#64748b">TripController@show</td>
+          <td style="padding:10px 14px"><span style="color:#fb7185;font-size:11px">Auth + Owner</span></td>
+          <td style="padding:10px 14px;color:#94a3b8">View saved trip (replay results)</td>
+        </tr>
+        <tr style="border-bottom:1px solid #1e293b">
+          <td style="padding:10px 14px"><span style="background:rgba(167,139,250,0.1);color:#a78bfa;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:700">POST</span></td>
+          <td style="padding:10px 14px;color:#cbd5e1;font-family:monospace">/trips/{trip}/wishlist</td>
+          <td style="padding:10px 14px;color:#64748b">TripController@toggleWishlist</td>
+          <td style="padding:10px 14px"><span style="color:#fb7185;font-size:11px">Auth + Owner</span></td>
+          <td style="padding:10px 14px;color:#94a3b8">Toggle wishlist boolean</td>
+        </tr>
+        <tr style="border-bottom:1px solid #1e293b">
+          <td style="padding:10px 14px"><span style="background:rgba(167,139,250,0.1);color:#a78bfa;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:700">POST</span></td>
+          <td style="padding:10px 14px;color:#cbd5e1;font-family:monospace">/trips/{trip}/share</td>
+          <td style="padding:10px 14px;color:#64748b">TripController@generateShareLink</td>
+          <td style="padding:10px 14px"><span style="color:#fb7185;font-size:11px">Auth + Owner</span></td>
+          <td style="padding:10px 14px;color:#94a3b8">Generate/get share token &amp; URL</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 14px"><span style="background:rgba(251,113,133,0.1);color:#fb7185;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:700">DELETE</span></td>
+          <td style="padding:10px 14px;color:#cbd5e1;font-family:monospace">/trips/{trip}</td>
+          <td style="padding:10px 14px;color:#64748b">TripController@destroy</td>
+          <td style="padding:10px 14px"><span style="color:#fb7185;font-size:11px">Auth + Owner</span></td>
+          <td style="padding:10px 14px;color:#94a3b8">Permanently delete trip</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Footer -->
+  <div style="text-align:center;padding:60px 0 40px;color:#334155;font-size:13px;border-top:1px solid #1e293b">
+    <div style="font-size:28px;margin-bottom:12px">🌍</div>
+    <div style="font-weight:800;color:#475569;font-size:16px;margin-bottom:6px">GlobePlanner Design Document</div>
+    <div>Laravel 12 · React 19 · Inertia.js · Tailwind CSS v4 · SQLite · Geoapify</div>
+    <div style="margin-top:8px;color:#1e293b">© 2026 GlobePlanner — All rights reserved</div>
+  </div>
+
+</div>
+
+<!-- Print to PDF tip -->
+<div style="position:fixed;bottom:20px;right:20px;background:rgba(14,165,233,0.9);backdrop-filter:blur(10px);color:#fff;font-size:12px;font-weight:600;padding:10px 16px;border-radius:12px;cursor:pointer;box-shadow:0 4px 20px rgba(14,165,233,0.3)" onclick="window.print()">
+  🖨️ Print / Save as PDF
+</div>
+
+</body>
+</html>

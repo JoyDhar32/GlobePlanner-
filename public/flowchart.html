@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>GlobePlanner — App Lifecycle Flowchart</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #f8fafc;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    padding: 48px 40px 80px;
+    color: #1e293b;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+  .header .eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin-bottom: 10px;
+  }
+  .header h1 {
+    font-size: 32px;
+    font-weight: 900;
+    color: #0f172a;
+    letter-spacing: -0.5px;
+  }
+  .header p {
+    font-size: 14px;
+    color: #64748b;
+    margin-top: 8px;
+  }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 52px;
+  }
+  .leg {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+  }
+  .leg-swatch {
+    width: 14px; height: 14px;
+    border-radius: 3px;
+  }
+
+  /* ── FLOWCHART LAYOUT ── */
+  .chart {
+    max-width: 960px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  /* Row wrapper */
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    width: 100%;
+  }
+
+  /* ── Box types ── */
+  /* Terminal (start/end) — rounded pill */
+  .box-terminal {
+    border-radius: 100px;
+    padding: 14px 36px;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    border: 2px solid;
+    min-width: 160px;
+    text-align: center;
+  }
+
+  /* Process — rectangle */
+  .box-process {
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-size: 13px;
+    font-weight: 700;
+    border: 2px solid;
+    min-width: 150px;
+    text-align: center;
+    line-height: 1.4;
+  }
+  .box-process .icon { font-size: 20px; display: block; margin-bottom: 6px; }
+  .box-process .title { font-size: 13px; }
+  .box-process .sub { font-size: 11px; font-weight: 400; margin-top: 4px; opacity: 0.75; line-height: 1.4; }
+
+  /* Decision — diamond shape via CSS */
+  .box-decision {
+    width: 130px; height: 130px;
+    transform: rotate(45deg);
+    border-radius: 8px;
+    border: 2px solid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .box-decision .inner {
+    transform: rotate(-45deg);
+    text-align: center;
+    padding: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+  .box-decision .inner .icon { font-size: 18px; display: block; margin-bottom: 4px; }
+
+  /* Sub-process group container */
+  .group {
+    border-radius: 14px;
+    padding: 20px 18px 18px;
+    border: 2px dashed;
+    position: relative;
+  }
+  .group-label {
+    position: absolute;
+    top: -12px;
+    left: 16px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 3px 10px;
+    border-radius: 100px;
+    border: 1px solid;
+  }
+  .group-inner {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* ── Arrows ── */
+  .arrow-down {
+    width: 2px;
+    background: #cbd5e1;
+    position: relative;
+    margin: 0 auto;
+    flex-shrink: 0;
+  }
+  .arrow-down::after {
+    content: '';
+    position: absolute;
+    bottom: -7px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 8px solid #94a3b8;
+  }
+
+  .arrow-right {
+    height: 2px;
+    background: #cbd5e1;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .arrow-right::after {
+    content: '';
+    position: absolute;
+    right: -7px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-top: 6px solid transparent;
+    border-bottom: 6px solid transparent;
+    border-left: 8px solid #94a3b8;
+  }
+
+  .arrow-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-align: center;
+    margin: 4px 0;
+    letter-spacing: 0.5px;
+  }
+
+  /* spacer */
+  .gap { flex-shrink: 0; }
+
+  /* ── Color palettes ── */
+  /* Start/End — slate */
+  .slate-box { background: #1e293b; border-color: #1e293b; color: #f1f5f9; }
+
+  /* Discover — sky */
+  .sky-box   { background: #e0f2fe; border-color: #0ea5e9; color: #0c4a6e; }
+  .sky-group { border-color: #7dd3fc; }
+  .sky-group .group-label { background: #e0f2fe; border-color: #0ea5e9; color: #0369a1; }
+
+  /* Plan — violet */
+  .violet-box   { background: #ede9fe; border-color: #7c3aed; color: #3b0764; }
+  .violet-group { border-color: #c4b5fd; }
+  .violet-group .group-label { background: #ede9fe; border-color: #7c3aed; color: #6d28d9; }
+
+  /* Explore — emerald */
+  .emerald-box   { background: #d1fae5; border-color: #10b981; color: #064e3b; }
+  .emerald-group { border-color: #6ee7b7; }
+  .emerald-group .group-label { background: #d1fae5; border-color: #10b981; color: #065f46; }
+
+  /* Auth — amber */
+  .amber-box   { background: #fef3c7; border-color: #f59e0b; color: #78350f; }
+  .amber-group { border-color: #fcd34d; }
+  .amber-group .group-label { background: #fef3c7; border-color: #f59e0b; color: #b45309; }
+
+  /* Save — orange */
+  .orange-box   { background: #ffedd5; border-color: #f97316; color: #7c2d12; }
+  .orange-group { border-color: #fdba74; }
+  .orange-group .group-label { background: #ffedd5; border-color: #f97316; color: #c2410c; }
+
+  /* Share — rose */
+  .rose-box   { background: #ffe4e6; border-color: #f43f5e; color: #881337; }
+  .rose-group { border-color: #fda4af; }
+  .rose-group .group-label { background: #ffe4e6; border-color: #f43f5e; color: #be123c; }
+
+  /* Decision YES/NO labels */
+  .yes-label { color: #16a34a; font-size: 10px; font-weight: 800; }
+  .no-label  { color: #dc2626; font-size: 10px; font-weight: 800; }
+
+  /* Side branch */
+  .side-branch {
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+
+  /* Print */
+  .print-btn {
+    display: block;
+    margin: 48px auto 0;
+    background: #0f172a;
+    color: #fff;
+    border: none;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 13px 32px;
+    border-radius: 100px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+  }
+  .print-btn:hover { background: #1e293b; }
+
+  @media print {
+    body { padding: 20px; }
+    .print-btn { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="eyebrow">App Lifecycle</div>
+  <h1>🌍 GlobePlanner — User Flow</h1>
+  <p>From first visit to sharing a trip with friends</p>
+</div>
+
+<!-- Legend -->
+<div class="legend">
+  <div class="leg"><div class="leg-swatch" style="background:#1e293b"></div>Start / End</div>
+  <div class="leg"><div class="leg-swatch" style="background:#0ea5e9"></div>Discover</div>
+  <div class="leg"><div class="leg-swatch" style="background:#7c3aed"></div>Plan</div>
+  <div class="leg"><div class="leg-swatch" style="background:#10b981"></div>Explore</div>
+  <div class="leg"><div class="leg-swatch" style="background:#f59e0b"></div>Auth</div>
+  <div class="leg"><div class="leg-swatch" style="background:#f97316"></div>Save</div>
+  <div class="leg"><div class="leg-swatch" style="background:#f43f5e"></div>Share</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     FLOWCHART
+═══════════════════════════════════════════════ -->
+<div class="chart">
+
+  <!-- START -->
+  <div class="row">
+    <div class="box-terminal slate-box">🚀 Start</div>
+  </div>
+
+  <div class="arrow-down" style="height:36px"></div>
+
+  <!-- STEP 1 — DISCOVER -->
+  <div class="row">
+    <div class="group sky-group" style="width:580px">
+      <div class="group-label sky-group" style="background:#e0f2fe;border-color:#0ea5e9;color:#0369a1">① Discover</div>
+      <div class="group-inner" style="gap:10px">
+        <div class="box-process sky-box">
+          <span class="icon">🏠</span>
+          <span class="title">Visit Home Page</span>
+          <div class="sub">Landing page with hero search & featured destinations</div>
+        </div>
+        <div class="arrow-right" style="width:24px"></div>
+        <div class="box-process sky-box">
+          <span class="icon">📍</span>
+          <span class="title">Browse Destinations</span>
+          <div class="sub">Popular cities, Australia spotlight, global picks</div>
+        </div>
+        <div class="arrow-right" style="width:24px"></div>
+        <div class="box-process sky-box">
+          <span class="icon">🔍</span>
+          <span class="title">Search a Place</span>
+          <div class="sub">Autocomplete suggests real cities worldwide</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-down" style="height:36px"></div>
+
+  <!-- STEP 2 — PLAN -->
+  <div class="row">
+    <div class="group violet-group" style="width:700px">
+      <div class="group-label">② Plan</div>
+      <div class="group-inner" style="gap:10px">
+        <div class="box-process violet-box">
+          <span class="icon">👥</span>
+          <span class="title">Set Travelers</span>
+          <div class="sub">1 to 20 people</div>
+        </div>
+        <div class="arrow-right" style="width:20px"></div>
+        <div class="box-process violet-box">
+          <span class="icon">📅</span>
+          <span class="title">Set Duration</span>
+          <div class="sub">1 to 30 days</div>
+        </div>
+        <div class="arrow-right" style="width:20px"></div>
+        <div class="box-process violet-box">
+          <span class="icon">🏷️</span>
+          <span class="title">Choose Category</span>
+          <div class="sub">Standard / Premium / Luxury</div>
+        </div>
+        <div class="arrow-right" style="width:20px"></div>
+        <div class="box-process violet-box">
+          <span class="icon">💰</span>
+          <span class="title">Set Budget</span>
+          <div class="sub">Low / Medium / High</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-down" style="height:36px"></div>
+
+  <!-- GENERATE BUTTON -->
+  <div class="row">
+    <div class="box-process" style="background:#7c3aed;border-color:#6d28d9;color:#fff;border-radius:10px;min-width:200px">
+      <span class="icon">⚡</span>
+      <span class="title">Generate Trip Plan</span>
+      <div class="sub" style="color:rgba(255,255,255,0.75)">Fetches real attractions, hotels & itinerary</div>
+    </div>
+  </div>
+
+  <div class="arrow-down" style="height:36px"></div>
+
+  <!-- STEP 3 — EXPLORE -->
+  <div class="row">
+    <div class="group emerald-group" style="width:720px">
+      <div class="group-label">③ Explore Results</div>
+      <div class="group-inner" style="gap:10px">
+        <div class="box-process emerald-box">
+          <span class="icon">🏛️</span>
+          <span class="title">Top Attractions</span>
+          <div class="sub">Real nearby places from location data</div>
+        </div>
+        <div class="arrow-right" style="width:20px"></div>
+        <div class="box-process emerald-box">
+          <span class="icon">🏨</span>
+          <span class="title">Hotel Options</span>
+          <div class="sub">Curated stays with ratings & prices</div>
+        </div>
+        <div class="arrow-right" style="width:20px"></div>
+        <div class="box-process emerald-box">
+          <span class="icon">📅</span>
+          <span class="title">Day-by-Day Itinerary</span>
+          <div class="sub">Activities with images for each day</div>
+        </div>
+        <div class="arrow-right" style="width:20px"></div>
+        <div class="box-process emerald-box">
+          <span class="icon">ℹ️</span>
+          <span class="title">Destination Info</span>
+          <div class="sub">Language, currency, best time to visit</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-down" style="height:36px"></div>
+
+  <!-- DECISION — Logged in? -->
+  <div class="row" style="gap:0;align-items:center">
+    <div class="box-decision amber-box">
+      <div class="inner">
+        <span class="icon">🔐</span>
+        Logged In?
+      </div>
+    </div>
+  </div>
+
+  <!-- YES / NO branches -->
+  <div class="row" style="align-items:flex-start;width:700px;justify-content:space-between;margin-top:0">
+
+    <!-- NO branch — left -->
+    <div style="display:flex;flex-direction:column;align-items:center;width:240px">
+      <div style="height:28px;width:2px;background:#cbd5e1;position:relative">
+        <div style="position:absolute;top:6px;left:-120px;white-space:nowrap" class="no-label">✕ No</div>
+      </div>
+      <div class="box-process amber-box" style="width:200px">
+        <span class="icon">✨</span>
+        <span class="title">Prompt to Register</span>
+        <div class="sub">Free account — no credit card needed</div>
+      </div>
+      <div class="arrow-down" style="height:20px"></div>
+      <div class="box-process amber-box" style="width:200px">
+        <span class="icon">📝</span>
+        <span class="title">Sign Up / Log In</span>
+        <div class="sub">Email + password authentication</div>
+      </div>
+      <div class="arrow-down" style="height:20px"></div>
+      <div style="font-size:11px;color:#b45309;font-weight:700;background:#fef3c7;border:1px solid #f59e0b;border-radius:100px;padding:4px 14px">→ Joins YES path</div>
+    </div>
+
+    <!-- YES branch — right -->
+    <div style="display:flex;flex-direction:column;align-items:center;width:240px">
+      <div style="height:28px;width:2px;background:#cbd5e1;position:relative">
+        <div style="position:absolute;top:6px;left:8px;white-space:nowrap" class="yes-label">✓ Yes</div>
+      </div>
+      <div class="box-process" style="background:#dcfce7;border-color:#16a34a;color:#14532d;border-radius:10px;width:200px">
+        <span class="icon">✅</span>
+        <span class="title">Trip Auto-Saved</span>
+        <div class="sub">Stored to your account instantly</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="arrow-down" style="height:36px"></div>
+
+  <!-- STEP 4 — SAVE & DASHBOARD -->
+  <div class="row">
+    <div class="group orange-group" style="width:680px">
+      <div class="group-label">④ Save & Manage</div>
+      <div class="group-inner" style="gap:10px">
+        <div class="box-process orange-box">
+          <span class="icon">📊</span>
+          <span class="title">Dashboard</span>
+          <div class="sub">All trips, stats, history in one place</div>
+        </div>
+        <div class="arrow-right" style="width:20px"></div>
+        <div class="box-process orange-box">
+          <span class="icon">❤️</span>
+          <span class="title">Wishlist</span>
+          <div class="sub">Heart any trip to save it for later</div>
+        </div>
+        <div class="arrow-right" style="width:20px"></div>
+        <div class="box-process orange-box">
+          <span class="icon">🔁</span>
+          <span class="title">Re-view Trip</span>
+          <div class="sub">Click any card to reload full results</div>
+        </div>
+        <div class="arrow-right" style="width:20px"></div>
+        <div class="box-process orange-box">
+          <span class="icon">🗑️</span>
+          <span class="title">Delete Trip</span>
+          <div class="sub">Two-click confirm before removing</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-down" style="height:36px"></div>
+
+  <!-- STEP 5 — SHARE -->
+  <div class="row">
+    <div class="group rose-group" style="width:760px">
+      <div class="group-label">⑤ Share</div>
+      <div class="group-inner" style="gap:10px">
+        <div class="box-process rose-box">
+          <span class="icon">📤</span>
+          <span class="title">Click Share</span>
+          <div class="sub">On trip results page or dashboard card</div>
+        </div>
+        <div class="arrow-right" style="width:20px"></div>
+        <div class="box-process rose-box">
+          <span class="icon">🔗</span>
+          <span class="title">Public Link Created</span>
+          <div class="sub">Unique /shared/{token} URL generated</div>
+        </div>
+        <div class="arrow-right" style="width:20px"></div>
+        <div class="box-process rose-box">
+          <span class="icon">📋</span>
+          <span class="title">Copy or Send</span>
+          <div class="sub">WhatsApp · Facebook · X · Email · Instagram · TikTok</div>
+        </div>
+        <div class="arrow-right" style="width:20px"></div>
+        <div class="box-process rose-box">
+          <span class="icon">👁️</span>
+          <span class="title">Anyone Views</span>
+          <div class="sub">No login needed to view shared trip</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-down" style="height:36px"></div>
+
+  <!-- END -->
+  <div class="row">
+    <div class="box-terminal slate-box">🏁 End</div>
+  </div>
+
+</div><!-- /chart -->
+
+<button class="print-btn" onclick="window.print()">🖨️ Save as PDF</button>
+
+</body>
+</html>
