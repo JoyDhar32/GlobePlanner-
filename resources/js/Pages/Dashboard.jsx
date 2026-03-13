@@ -16,6 +16,9 @@ function TripCard({ trip, onWishlistToggle, onDelete }) {
   const [toggling, setToggling] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const [shareUrl, setShareUrl] = useState('');
+  const [copied, setCopied] = useState(false);
 
   const csrf = () => document.querySelector('meta[name="csrf-token"]')?.content;
 
@@ -41,6 +44,21 @@ function TripCard({ trip, onWishlistToggle, onDelete }) {
     } catch (e) { console.error(e); setDeleting(false); }
   };
 
+  const handleShare = async (e) => {
+    e.stopPropagation();
+    if (sharing) return;
+    setSharing(true);
+    try {
+      const { data } = await axios.post(`/trips/${trip.id}/share`, {}, { headers: { 'X-CSRF-TOKEN': csrf() } });
+      setShareUrl(data.url);
+      navigator.clipboard.writeText(data.url).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 3000);
+      });
+    } catch (e) { console.error(e); }
+    finally { setSharing(false); }
+  };
+
   const handleView = () => router.visit(`/trips/${trip.id}`);
   const seed = trip.destination.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12) || 'travel';
 
@@ -59,6 +77,29 @@ function TripCard({ trip, onWishlistToggle, onDelete }) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         {/* Action buttons */}
         <div className="absolute top-3 right-3 flex gap-1.5" onClick={e => e.stopPropagation()}>
+          {/* Share */}
+          <div className="relative">
+            <button
+              onClick={handleShare}
+              disabled={sharing}
+              title="Copy share link"
+              className={`w-7 h-7 rounded-full flex items-center justify-center transition-all shadow-md ${
+                copied ? 'bg-green-500 text-white' : 'bg-white/90 text-gray-400 hover:text-sky-500'
+              }`}
+            >
+              {sharing
+                ? <div className="w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin" />
+                : copied
+                ? <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                : <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+              }
+            </button>
+            {copied && (
+              <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded-lg whitespace-nowrap">
+                Link copied!
+              </div>
+            )}
+          </div>
           <button
             onClick={handleWishlist}
             disabled={toggling}

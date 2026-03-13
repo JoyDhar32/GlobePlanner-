@@ -12,7 +12,7 @@ class Trip extends Model
     protected $fillable = [
         'user_id', 'destination', 'destination_place_id',
         'travelers', 'duration_days', 'category', 'budget',
-        'wishlisted', 'notes',
+        'wishlisted', 'notes', 'share_token',
         'attractions', 'hotels', 'itinerary',
     ];
 

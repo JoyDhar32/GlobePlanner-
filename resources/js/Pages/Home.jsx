@@ -7,10 +7,10 @@ import DestinationSearch from '../Components/DestinationSearch';
 const destinations = [
   { name: 'Sydney', country: 'Australia', seed: 'sydneyharbour', tag: 'Most Popular', desc: 'Iconic Opera House & Harbour' },
   { name: 'Melbourne', country: 'Australia', seed: 'melbournecity', tag: 'Trending', desc: 'Culture, food & vibrant laneways' },
-  { name: 'Gold Coast', country: 'Australia', seed: 'goldcoastbeach', tag: 'Beach Life', desc: 'Sun, surf & theme parks' },
   { name: 'Bali', country: 'Indonesia', seed: 'balirice', tag: 'Top Getaway', desc: 'Temples, rice fields & beaches' },
   { name: 'Tokyo', country: 'Japan', seed: 'tokyocity', tag: 'Top Rated', desc: 'Tradition meets futuristic city' },
-  { name: 'Singapore', country: 'Singapore', seed: 'singaporeskyline', tag: 'City Life', desc: 'Gardens by the Bay & Marina' },
+  { name: 'Paris', country: 'France', seed: 'pariscity', tag: 'Most Romantic', desc: 'Eiffel Tower, art & cuisine' },
+  { name: 'New York', country: 'USA', seed: 'newyorkcity', tag: 'City Life', desc: 'The city that never sleeps' },
 ];
 
 const features = [
@@ -119,17 +119,17 @@ export default function Home() {
           <div className="mb-4">
             <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-sky-200 text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
               <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse inline-block" />
-              Australia's #1 Travel Planner
+              Smart Travel Planning — Anywhere in the World
             </span>
           </div>
           <h1 className="text-5xl md:text-7xl font-extrabold text-white mb-6 leading-tight tracking-tight">
             Plan Your Perfect<br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-300 via-blue-200 to-cyan-300">
-              Australian Adventure
+              Trip, Anywhere
             </span>
           </h1>
           <p className="text-xl md:text-2xl text-gray-200/90 mb-10 max-w-3xl mx-auto leading-relaxed font-light">
-            From the Sydney Harbour to the Great Barrier Reef — discover, plan, and book your dream trip in minutes.
+            From Sydney to Paris, Bali to New York — discover destinations, generate smart itineraries, and find the best hotels worldwide.
           </p>
 
           {/* Search box */}
@@ -159,7 +159,7 @@ export default function Home() {
 
           {/* Quick picks */}
           <div className="flex flex-wrap justify-center gap-2 mb-16">
-            {['Sydney', 'Melbourne', 'Gold Coast', 'Bali', 'Tokyo', 'Singapore'].map((city) => (
+            {['Sydney', 'Bali', 'Tokyo', 'Paris', 'New York', 'Singapore'].map((city) => (
               <button
                 key={city}
                 onClick={() => handleQuickCity(city)}
@@ -353,10 +353,10 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-r from-teal-900/90 via-blue-900/80 to-sky-900/70" />
         </div>
         <div className="relative max-w-4xl mx-auto px-4 text-center">
-          <span className="text-teal-300 text-sm font-bold uppercase tracking-widest">Featured</span>
-          <h2 className="text-4xl md:text-5xl font-extrabold text-white mt-4 mb-6">Explore Australia First</h2>
+          <span className="text-teal-300 text-sm font-bold uppercase tracking-widest">Featured Region</span>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-white mt-4 mb-6">Discover Australia</h2>
           <p className="text-xl text-teal-100/90 mb-10 max-w-2xl mx-auto leading-relaxed">
-            From the Great Barrier Reef to the Red Centre, the Whitsundays to the Daintree — Australia's wonders are right at your doorstep.
+            From the Great Barrier Reef to the Red Centre, the Whitsundays to the Daintree — Australia has some of the world's most spectacular destinations.
           </p>
           <div className="flex flex-wrap justify-center gap-3 mb-10">
             {['Sydney', 'Melbourne', 'Gold Coast', 'Cairns', 'Perth', 'Hobart'].map(city => (
@@ -390,9 +390,9 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { name: 'Sarah M.', city: 'Brisbane, QLD', quote: 'Planned my entire Bali trip in under 5 minutes. The day-by-day itinerary was spot-on and saved me hours of research.', stars: 5, avatar: 'sarah' },
-              { name: 'James K.', city: 'Sydney, NSW', quote: 'The hotel recommendations were fantastic. Found a place I never would have discovered otherwise. Highly recommend!', stars: 5, avatar: 'james' },
-              { name: 'Emma L.', city: 'Melbourne, VIC', quote: 'Used it for our Gold Coast family trip. The wishlist feature is brilliant — bookmarked 3 trips and came back to all of them!', stars: 5, avatar: 'emma' },
+              { name: 'Sarah M.', city: 'Brisbane, Australia', quote: 'Planned my entire Bali trip in under 5 minutes. The day-by-day itinerary was spot-on and saved me hours of research.', stars: 5, avatar: 'sarah' },
+              { name: 'James K.', city: 'London, UK', quote: 'The hotel recommendations were fantastic. Found a place in Tokyo I never would have discovered otherwise. Highly recommend!', stars: 5, avatar: 'james' },
+              { name: 'Emma L.', city: 'Toronto, Canada', quote: 'Used it to plan a Paris trip for two. The wishlist feature is brilliant — bookmarked 3 trips and came back to all of them!', stars: 5, avatar: 'emma' },
             ].map((t, i) => (
               <div key={i} className="bg-gray-50 rounded-3xl p-8 border border-gray-100 hover:shadow-lg transition-all duration-300 group">
                 <div className="flex gap-0.5 mb-5">
@@ -435,7 +435,7 @@ export default function Home() {
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-blue-300">Starts Here</span>
           </h2>
           <p className="text-xl text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed">
-            Join thousands of Australians planning better trips with GlobePlanner — completely free, no credit card needed.
+            Join thousands of travellers planning better trips with GlobePlanner — completely free, no credit card needed.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a

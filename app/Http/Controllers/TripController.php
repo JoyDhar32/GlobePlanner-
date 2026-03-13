@@ -6,6 +6,7 @@ use App\Models\Trip;
 use App\Services\GeoapifyService;
 use App\Services\TravelApiService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class TripController extends Controller
@@ -104,6 +105,39 @@ class TripController extends Controller
         abort_unless(auth()->id() === $trip->user_id, 403);
         $trip->update(['wishlisted' => !$trip->wishlisted]);
         return response()->json(['wishlisted' => $trip->wishlisted]);
+    }
+
+    public function generateShareLink(Trip $trip)
+    {
+        abort_unless(auth()->id() === $trip->user_id, 403);
+
+        if (!$trip->share_token) {
+            $trip->update(['share_token' => Str::random(48)]);
+        }
+
+        return response()->json([
+            'url' => url("/shared/{$trip->share_token}"),
+        ]);
+    }
+
+    public function showShared(string $token)
+    {
+        $trip = Trip::where('share_token', $token)->firstOrFail();
+
+        $tripData = $this->travelService->buildTripDataFromSaved($trip);
+
+        return Inertia::render('TripResults', [
+            'trip'     => null,   // read-only — no wishlist/delete controls for viewer
+            'tripData' => $tripData,
+            'formData' => [
+                'destination'   => $trip->destination,
+                'travelers'     => $trip->travelers,
+                'duration_days' => $trip->duration_days,
+                'category'      => $trip->category,
+                'budget'        => $trip->budget,
+            ],
+            'isSharedView' => true,
+        ]);
     }
 
     public function dashboard()
